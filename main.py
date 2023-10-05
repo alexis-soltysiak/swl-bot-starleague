@@ -312,16 +312,21 @@ async def slash_command(interaction: discord.Interaction,ligue: str, poule_name:
     dfClassement = pd.read_csv(lienClassement,delimiter = ",")
     
     ligue = find_closest_match(ligue , ligueList)
-    poule_name = find_closest_match(poule_name , pouleList)
-    
+
     dfClassement = dfClassement[dfClassement["Ligue"] == ligue]
-    dfClassement = dfClassement[dfClassement["Poule"] == poule_name]
+    if poule_name : 
+        poule_name = find_closest_match(poule_name , pouleList)
+        pouleList = [poule_name]
+    else : 
+        pouleList = sorted(dfClassement["Poule"].unique())
+        
+ 
     
     if dfClassement.empty:
         await interaction.channel.send("❌ Erreur : ligue ou poule mal enregistrée ")
         return
     
-    dfClassement = dfClassement[["Pseudo","victory" ,"defeat","points"]]
+    dfClassement = dfClassement[["Pseudo","Poule","victory" ,"defeat","points"]]
     dfClassement = dfClassement.rename(columns={"victory": "V"})
     dfClassement = dfClassement.rename(columns={"defeat": "D"})
     dfClassement = dfClassement.rename(columns={"points": "PTS"})
@@ -336,47 +341,59 @@ async def slash_command(interaction: discord.Interaction,ligue: str, poule_name:
             dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:2].rjust(2))
         elif col == "PTS":
             dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:3].rjust(3))
+        elif col == "   Poule":
+            dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:5].rjust(5))
         else :  
             dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:8].rjust(8))
         
     dfClassement.columns = [
         col[:2].rjust(2) if col == "V" or col == "D" 
         else col[:3].rjust(3) if col == "PTS" 
+        else col[:5].rjust(5) if col == "Poule" 
         else col[:8].rjust(8) 
         for col in dfClassement.columns
     ]
-         
-  # Convertir le DataFrame en une liste de chaînes de caractères avec des `|` entre chaque valeur
-    header = ' | '.join(dfClassement.columns)
-    separator = '-|-'.join(['-' * len(col) for col in dfClassement.columns])
-    rows_as_strings = dfClassement.apply(lambda row: ' | '.join(row), axis=1)
+    total_content = ""
+ 
+    print("main")
+    print(dfClassement)
     
-    # Concaténer les chaînes de caractères avec des retours à la ligne
-    content = f"```\n| {header} |\n| {separator} |\n" + '\n'.join('| ' + row + ' |' for row in rows_as_strings) + "\n```"
+    for poule in pouleList:
 
-    # Si le contenu est trop long pour un message Discord, vous devrez le tronquer ou l'envoyer en plusieurs messages.
-    if len(content) > 2000:
-        content = content[:2000] + "..."
+        print(list(dfClassement.columns),list(pouleList))
+        print(dfClassement)
+        df_poule = dfClassement[dfClassement['Poule'].str.strip() == poule]
+        df_poule = df_poule[["  Pseudo"," V" ," D","PTS"]]
+        print(df_poule)
         
+
+        # Convertir ce DataFrame comme vous l'avez fait précédemment
+        header = ' | '.join(df_poule.columns)
+        separator = '-|-'.join(['-' * len(col) for col in df_poule.columns])
+        rows_as_strings = df_poule.apply(lambda row: ' | '.join(row), axis=1)
         
-    # Télécharger l'image sur Discord
+        content = f"```\n| {header} |\n| {separator} |\n" + '\n'.join('| ' + row + ' |' for row in rows_as_strings) + "\n```"
+        
+  
+
+        total_content += content + "\n\n"
+        
+    # Si le contenu total est trop long pour un message Discord, vous devez le tronquer.
+    if len(total_content) > 2000:
+        total_content = total_content[:2000] + "..."
+
     with open('media/baniere.png', 'rb') as f:
         uploaded_image = await interaction.channel.send(file=discord.File(f))
         image_url = uploaded_image.attachments[0].url
 
-    # Créer un embed
-    embed = discord.Embed(title=f"Classement {ligue} {poule_name}")
-
-    # Utiliser l'URL de l'image téléchargée pour l'embed
+    embed = discord.Embed(title=f"Classement {ligue}")
     embed.set_image(url=image_url)
-    
-    # Ajouter le contenu de votre classement à l'embed comme description
-    embed.description = content
+    embed.description = total_content
 
-    # Supprimer le message avec l'image téléchargée pour ne pas encombrer le canal
     await uploaded_image.delete()
-
     await interaction.response.send_message(embed=embed)
+    return
+
      
 
 @bot.command()
