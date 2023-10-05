@@ -1,0 +1,393 @@
+# Importing Some stuff for our bot
+import discord
+from discord.ext import commands
+import os
+from time import sleep
+import logging
+from discord import Embed, SelectMenu, SelectOption, Button, ButtonStyle,  Interaction
+from datetime import datetime
+import pandas as pd
+import re
+from dotenv import load_dotenv
+import difflib
+
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    format="[%(asctime)s] [%(filename)s:%(lineno)d] %(message)s", level=logging.INFO
+)
+
+load_dotenv()
+
+token = os.getenv("token")
+
+intents = discord.Intents.default() # Creating default intents
+intents.message_content = True # Giving our bot permission to send and read messages
+
+bot = commands.Bot(command_prefix="/",intents=intents) # Creating bot
+
+ligueList = ["Coruscant","Tatooine","Alderaan","Kessel"]
+pouleList = ["A","B","C","D"]
+
+def find_closest_match(input_str, choices):
+    matches = difflib.get_close_matches(input_str, choices, n=1,cutoff=0.3)  # n=1 signifie que nous voulons seulement la meilleure correspondance
+    if matches:
+        return matches[0]
+    else:
+        return None
+    
+    
+# Our First Command
+@bot.command()
+async def hello(ctx):
+    await ctx.send("Hey!")
+
+@bot.event
+async def on_ready():
+    logger.info(f"Logged in as {bot.user.name}")
+    await bot.tree.sync()
+
+@bot.event
+async def on_message(message):
+    
+    if message.channel.id == 1158499018960277675:  # Remplacez XXXXXXXXXXXXX par l'ID de votre canal
+        lines = message.content.split("\n")
+        
+        if len(lines) >= 11:
+            
+            actualTime = datetime.now()
+            mail = "martinpourrat@hotmail.com"
+            try : 
+                phase = lines[0].strip()
+            except : 
+                await message.channel.send("❌ Erreur : phase mal enregistrée ")
+
+            try : 
+                leagueName = lines[1].strip()
+            except : 
+                await message.channel.send("❌ Erreur : nom de league mal enregistré ")
+                
+            try : 
+                poule = lines[2].strip()
+            except : 
+                await message.channel.send("❌ Erreur : poule mal enregistrée ")
+                
+            try : 
+                mission = lines[7].strip()
+            except : 
+                await message.channel.send("❌ Erreur : mission mal enregistrée ")
+                
+            try : 
+                deploiement = lines[8].strip()
+            except : 
+                await message.channel.send("❌ Erreur : deploiement mal enregistré ")
+                
+            try : 
+                conditions = lines[9].strip()
+            except : 
+                await message.channel.send("❌ Erreur : condition mal enregistré ")
+            
+            try : 
+                kpBleu = int(lines[10].strip())
+            except : 
+                await message.channel.send("❌ Erreur : kp bleu  mal enregistré ")
+            
+            try :    
+                kpRouge = int(lines[11].strip())
+            except : 
+                await message.channel.send("❌ Erreur : kp rouge mal enregistré ")
+
+            try : 
+                # Découper la chaîne de score
+                score_parts = lines[6].split("-")
+                score_1 = int(score_parts[0].strip())
+                score_2 = int(score_parts[1].strip())
+            except : 
+                await message.channel.send("❌ Erreur : score mal enregistré ")
+
+            try : 
+                match = re.match(r'<@!?(\d+)>', lines[3])
+                
+                if match:
+                    member_id = int(match.group(1))
+                    member = await message.guild.fetch_member(member_id)
+                    
+            
+                    if member:
+                        joueurBleu = f"{member.name}#{member.discriminator}"  # Format : "username#discriminator"
+                    else:
+                        joueurBleu = "None"
+                else: 
+                    await message.channel.send("❌ Erreur : Joueur Bleu mal enregistré ")
+
+            except : 
+                await message.channel.send("❌ Erreur : Joueur Bleu mal enregistré ")  
+              
+            try :       
+                match = re.match(r'<@!?(\d+)>', lines[4])
+
+                if match:
+                    member_id = int(match.group(1))
+                    member = await message.guild.fetch_member(member_id)
+                    
+                    if member:
+                        joueurRouge = f"{member.name}#{member.discriminator}"
+                    else:
+                        joueurRouge = "None"
+                        
+                    print("eeee")
+                else : 
+                    await message.channel.send("❌ Erreur : Joueur Rouge mal enregistré ")
+            except : 
+                await message.channel.send("❌ Erreur : Joueur Rouge mal enregistré ")
+            
+            try : 
+                match = re.match(r'<@!?(\d+)>', lines[5])
+
+                if match:
+                    member_id = int(match.group(1))
+                    member = await message.guild.fetch_member(member_id)
+                    
+                    if member:
+                        winner = f"{member.name}#{member.discriminator}"
+                    else:
+                        winner = "None"
+                else : 
+                    await message.channel.send("❌ Erreur : winner mal enregistré ")
+
+            except : 
+                await message.channel.send("❌ Erreur : le nom du winner mal enregistré ") 
+
+            # Assurez-vous que le score le plus élevé va au gagnant
+            if winner == joueurBleu:
+                scoreBleu = max(score_1, score_2)
+                scoreRouge = min(score_1, score_2)
+            else:
+                scoreBleu = min(score_1, score_2)
+                scoreRouge = max(score_1, score_2)
+              
+            """  
+            print(f"league Name :  {leagueName}")
+            print(f"Poule: {poule}")
+            print(f"Joueur Bleu: {joueurBleu}")
+            print(f"Joueur Rouge: {joueurRouge}")
+            print(f"Winner: {winner}")
+            print(f"Score Bleu: {scoreBleu}")
+            print(f"Score Rouge: {scoreRouge}")
+            print(f"Mission: {mission}")
+            print(f"Deploiement: {deploiement}")
+            print(f"Conditions: {conditions}")
+            print(f"KP Bleu: {kpBleu}")
+            print(f"KP Rouge: {kpRouge}")
+            """ 
+            
+            try : 
+                df = pd.read_csv('bdd/match.csv')
+            except : 
+                await message.channel.send("❌ Erreur : csv mal lu") 
+                
+            # 2. Créer une nouvelle ligne sous forme de dictionnaire
+            nouvelle_ligne = {
+                "Horodateur": actualTime,
+                "Adresse e-mail": mail,
+                "Phase": phase,
+                "Joueur Bleu": joueurBleu,
+                "Joueur Rouge": joueurRouge,
+                "Vainqueur": winner,
+                "Points de Victoire Joueur Bleu (chiffre seulement)": scoreBleu,
+                "Points de Victoire Joueur Rouge (chiffre seulement)": scoreRouge,
+                "Kill Point Joueur Bleu (chiffre seulement)": kpBleu,
+                "Kill Point Joueur Rouge (chiffre seulement)": kpRouge,
+                "Objectif": mission,
+                "Déploiement": deploiement,
+                "Condition": conditions
+            }
+
+            try : 
+                df.loc[len(df)] = nouvelle_ligne
+            except : 
+                await message.channel.send("❌ Erreur : csv , nouvelle ligne mal enregistrée") 
+
+            try :
+                df.to_csv('bdd/match.csv', index=False)
+            except : 
+                await message.channel.send("❌ Erreur : sauvegarde csv ") 
+            
+            await message.channel.send("✅ Match bien enrigstré ")
+
+
+    await bot.process_commands(message)
+
+
+
+@bot.tree.command(name="wr",description="test")
+async def slash_command(interaction: discord.Interaction):
+    # Télécharger l'image sur Discord
+    with open('media/test.png', 'rb') as f:
+        uploaded_image = await interaction.channel.send(file=discord.File(f))
+        image_url = uploaded_image.attachments[0].url
+
+    # Créer un embed
+    embed = discord.Embed(title=f"Win rate general")
+
+    # Utiliser l'URL de l'image téléchargée pour l'embed
+    embed.set_image(url=image_url)
+    
+    embed.description = "test"
+
+
+    # Supprimer le message avec l'image téléchargée pour ne pas encombrer le canal
+    await uploaded_image.delete()
+
+    await interaction.response.send_message(embed=embed)
+
+
+"""
+
+@bot.tree.command(name="classementtest", description="afficher le classement")
+async def slash_command(interaction: discord.Interaction):
+    # Lire le fichier CSV avec pandas
+    df = pd.read_csv('bdd/match.csv')
+    
+    df = df[["Joueur Bleu","Points de Victoire Joueur Bleu (chiffre seulement)","Joueur Rouge","Points de Victoire Joueur Rouge (chiffre seulement)"]]
+
+    df = df.rename(columns={"Points de Victoire Joueur Bleu (chiffre seulement)": "VP Bleu"})
+    df = df.rename(columns={"Points de Victoire Joueur Rouge (chiffre seulement)": "VP Rouge"})
+
+
+    # 2. Nettoyer les colonnes "Joueur Bleu" et "Joueur Rouge"
+    df["Joueur Bleu"] = df["Joueur Bleu"].apply(lambda x: x.split('#')[0])
+    df["Joueur Rouge"] = df["Joueur Rouge"].apply(lambda x: x.split('#')[0])
+
+    
+    # Raccourcir les noms de colonnes à 8 caractères max
+    df.columns = [col[:8].rjust(8) for col in df.columns]
+
+    #Raccourcir chaque valeur du DataFrame à 8 caractères max
+    for col in df.columns:
+            df[col] = df[col].astype(str).apply(lambda x: x[:8].rjust(8))
+
+
+        
+  # Convertir le DataFrame en une liste de chaînes de caractères avec des `|` entre chaque valeur
+    header = ' | '.join(df.columns)
+    separator = '-|-'.join(['-' * len(col) for col in df.columns])
+    rows_as_strings = df.apply(lambda row: ' | '.join(row), axis=1)
+    
+    # Concaténer les chaînes de caractères avec des retours à la ligne
+    content = f"```\n| {header} |\n| {separator} |\n" + '\n'.join('| ' + row + ' |' for row in rows_as_strings) + "\n```"
+
+    # Si le contenu est trop long pour un message Discord, vous devrez le tronquer ou l'envoyer en plusieurs messages.
+    if len(content) > 2000:
+        content = content[:2000] + "..."
+        
+        
+    # Télécharger l'image sur Discord
+    with open('media/baniere.png', 'rb') as f:
+        uploaded_image = await interaction.channel.send(file=discord.File(f))
+        image_url = uploaded_image.attachments[0].url
+
+    # Créer un embed
+    embed = discord.Embed(title="Classement")
+
+    # Utiliser l'URL de l'image téléchargée pour l'embed
+    embed.set_image(url=image_url)
+    
+    # Ajouter le contenu de votre classement à l'embed comme description
+    embed.description = content
+
+    # Supprimer le message avec l'image téléchargée pour ne pas encombrer le canal
+    await uploaded_image.delete()
+
+    await interaction.response.send_message(embed=embed)
+"""
+
+
+
+@bot.tree.command(name="classement", description="afficher le classement")
+async def slash_command(interaction: discord.Interaction,ligue: str, poule_name: str):
+    
+    lienClassement = "bdd/classement.csv"
+   
+    dfClassement = pd.read_csv(lienClassement,delimiter = ",")
+    
+    ligue = find_closest_match(ligue , ligueList)
+    poule_name = find_closest_match(poule_name , pouleList)
+    
+    dfClassement = dfClassement[dfClassement["Ligue"] == ligue]
+    dfClassement = dfClassement[dfClassement["Poule"] == poule_name]
+    
+    if dfClassement.empty:
+        await interaction.channel.send("❌ Erreur : ligue ou poule mal enregistrée ")
+        return
+    
+    dfClassement = dfClassement[["Pseudo","victory" ,"defeat","points"]]
+    dfClassement = dfClassement.rename(columns={"victory": "V"})
+    dfClassement = dfClassement.rename(columns={"defeat": "D"})
+    dfClassement = dfClassement.rename(columns={"points": "PTS"})
+
+
+    #Raccourcir chaque valeur du DataFrame à 8 caractères max
+    for col in dfClassement.columns:
+
+        if col == "V":
+            dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:2].rjust(2))
+        elif col == "D":
+            dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:2].rjust(2))
+        elif col == "PTS":
+            dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:3].rjust(3))
+        else :  
+            dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:8].rjust(8))
+        
+    dfClassement.columns = [
+        col[:2].rjust(2) if col == "V" or col == "D" 
+        else col[:3].rjust(3) if col == "PTS" 
+        else col[:8].rjust(8) 
+        for col in dfClassement.columns
+    ]
+         
+  # Convertir le DataFrame en une liste de chaînes de caractères avec des `|` entre chaque valeur
+    header = ' | '.join(dfClassement.columns)
+    separator = '-|-'.join(['-' * len(col) for col in dfClassement.columns])
+    rows_as_strings = dfClassement.apply(lambda row: ' | '.join(row), axis=1)
+    
+    # Concaténer les chaînes de caractères avec des retours à la ligne
+    content = f"```\n| {header} |\n| {separator} |\n" + '\n'.join('| ' + row + ' |' for row in rows_as_strings) + "\n```"
+
+    # Si le contenu est trop long pour un message Discord, vous devrez le tronquer ou l'envoyer en plusieurs messages.
+    if len(content) > 2000:
+        content = content[:2000] + "..."
+        
+        
+    # Télécharger l'image sur Discord
+    with open('media/baniere.png', 'rb') as f:
+        uploaded_image = await interaction.channel.send(file=discord.File(f))
+        image_url = uploaded_image.attachments[0].url
+
+    # Créer un embed
+    embed = discord.Embed(title=f"Classement {ligue} {poule_name}")
+
+    # Utiliser l'URL de l'image téléchargée pour l'embed
+    embed.set_image(url=image_url)
+    
+    # Ajouter le contenu de votre classement à l'embed comme description
+    embed.description = content
+
+    # Supprimer le message avec l'image téléchargée pour ne pas encombrer le canal
+    await uploaded_image.delete()
+
+    await interaction.response.send_message(embed=embed)
+     
+
+@bot.command()
+async def av(ctx,member: discord.Member):
+    await ctx.send(member.display_avatar)
+
+@bot.tree.command(name="avatar",description="Get user avatar")
+async def avatar(interaction:discord.Interaction,member:discord.Member):
+    await interaction.response.send_message(member.display_avatar)
+
+
+
+
+bot.run(token)

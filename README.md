@@ -1,2 +1,3 @@
-# swl-bot-starleague
-python bot for star league
+# swl-starleague
+bot disocrd
+
