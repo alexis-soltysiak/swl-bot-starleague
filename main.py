@@ -315,11 +315,12 @@ async def slash_command(interaction: discord.Interaction,ligue: str, poule_name:
 
     dfClassement = dfClassement[dfClassement["Ligue"] == ligue]
     if poule_name : 
+        pouleList = ["A","B","C","D"]
         poule_name = find_closest_match(poule_name , pouleList)
         pouleList = [poule_name]
     else : 
         pouleList = sorted(dfClassement["Poule"].unique())
-        
+    
  
     
     if dfClassement.empty:
@@ -371,12 +372,14 @@ async def slash_command(interaction: discord.Interaction,ligue: str, poule_name:
         header = ' | '.join(df_poule.columns)
         separator = '-|-'.join(['-' * len(col) for col in df_poule.columns])
         rows_as_strings = df_poule.apply(lambda row: ' | '.join(row), axis=1)
-        
-        content = f"```\n| {header} |\n| {separator} |\n" + '\n'.join('| ' + row + ' |' for row in rows_as_strings) + "\n```"
-        
-  
+        # Titre pour la poule actuelle
+        poule_title = f"### Poule {poule} ###\n"
 
-        total_content += content + "\n\n"
+        content = f"```\n| {header} |\n| {separator} |\n" + '\n'.join('| ' + row + ' |' for row in rows_as_strings) + "\n```"
+
+        # Concatène le titre de la poule et son contenu au contenu total
+        total_content += poule_title + content + "\n"  # Deux sauts de ligne pour un espacement
+
         
     # Si le contenu total est trop long pour un message Discord, vous devez le tronquer.
     if len(total_content) > 2000:
