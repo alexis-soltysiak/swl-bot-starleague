@@ -305,7 +305,7 @@ async def slash_command(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="classement", description="afficher le classement")
-async def slash_command(interaction: discord.Interaction,ligue: str, poule_name: str):
+async def slash_command(interaction: discord.Interaction,ligue: str, poule_name:str = None):
     
     lienClassement = "bdd/classement.csv"
    
