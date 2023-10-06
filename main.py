@@ -11,6 +11,7 @@ import re
 from dotenv import load_dotenv
 import difflib
 
+from functions import update_all_results
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -46,6 +47,43 @@ async def hello(ctx):
 async def on_ready():
     logger.info(f"Logged in as {bot.user.name}")
     await bot.tree.sync()
+    
+@bot.tree.command(name="calcul", description="calcul csv")
+async def slash_command(interaction: discord.Interaction):
+    
+    
+    waitingMessage = await interaction.channel.send("Chargement en cours...")
+
+    await waitingMessage.delete()
+
+    # Exécutez la fonction qui prend du temps
+    update_all_results()
+
+    # Éditer le message précédent pour indiquer que le traitement est terminé
+    await interaction.response.send_message(content="✅ calcul fini!")
+
+
+
+@bot.tree.command(name="liste", description="afficher la liste d'un joueur")
+async def slash_command(interaction: discord.Interaction, user: discord.User):
+    
+    # Chargez le CSV dans un DataFrame
+    df = pd.read_csv("bdd/classement.csv")
+    
+    # Trouvez la ligne qui correspond au Pseudo Discord
+    matching_row = df[df["Pseudo Discord"] == user]
+    
+    # S'il y a une correspondance, retournez le lien. Sinon, retournez une chaîne vide ou un message d'erreur
+    if not matching_row.empty:
+     
+        await interaction.response.send_message(content=matching_row["Lien Armée"].iloc[0])
+
+    else:
+        await interaction.response.send_message(content="Pas de lien trouvé pour cet utilisateur.")
+
+        
+    # Éditer le message précédent pour indiquer que le traitement est terminé
+    
 
 @bot.event
 async def on_message(message):
@@ -242,67 +280,6 @@ async def slash_command(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed)
 
 
-"""
-
-@bot.tree.command(name="classementtest", description="afficher le classement")
-async def slash_command(interaction: discord.Interaction):
-    # Lire le fichier CSV avec pandas
-    df = pd.read_csv('bdd/match.csv')
-    
-    df = df[["Joueur Bleu","Points de Victoire Joueur Bleu (chiffre seulement)","Joueur Rouge","Points de Victoire Joueur Rouge (chiffre seulement)"]]
-
-    df = df.rename(columns={"Points de Victoire Joueur Bleu (chiffre seulement)": "VP Bleu"})
-    df = df.rename(columns={"Points de Victoire Joueur Rouge (chiffre seulement)": "VP Rouge"})
-
-
-    # 2. Nettoyer les colonnes "Joueur Bleu" et "Joueur Rouge"
-    df["Joueur Bleu"] = df["Joueur Bleu"].apply(lambda x: x.split('#')[0])
-    df["Joueur Rouge"] = df["Joueur Rouge"].apply(lambda x: x.split('#')[0])
-
-    
-    # Raccourcir les noms de colonnes à 8 caractères max
-    df.columns = [col[:8].rjust(8) for col in df.columns]
-
-    #Raccourcir chaque valeur du DataFrame à 8 caractères max
-    for col in df.columns:
-            df[col] = df[col].astype(str).apply(lambda x: x[:8].rjust(8))
-
-
-        
-  # Convertir le DataFrame en une liste de chaînes de caractères avec des `|` entre chaque valeur
-    header = ' | '.join(df.columns)
-    separator = '-|-'.join(['-' * len(col) for col in df.columns])
-    rows_as_strings = df.apply(lambda row: ' | '.join(row), axis=1)
-    
-    # Concaténer les chaînes de caractères avec des retours à la ligne
-    content = f"```\n| {header} |\n| {separator} |\n" + '\n'.join('| ' + row + ' |' for row in rows_as_strings) + "\n```"
-
-    # Si le contenu est trop long pour un message Discord, vous devrez le tronquer ou l'envoyer en plusieurs messages.
-    if len(content) > 2000:
-        content = content[:2000] + "..."
-        
-        
-    # Télécharger l'image sur Discord
-    with open('media/baniere.png', 'rb') as f:
-        uploaded_image = await interaction.channel.send(file=discord.File(f))
-        image_url = uploaded_image.attachments[0].url
-
-    # Créer un embed
-    embed = discord.Embed(title="Classement")
-
-    # Utiliser l'URL de l'image téléchargée pour l'embed
-    embed.set_image(url=image_url)
-    
-    # Ajouter le contenu de votre classement à l'embed comme description
-    embed.description = content
-
-    # Supprimer le message avec l'image téléchargée pour ne pas encombrer le canal
-    await uploaded_image.delete()
-
-    await interaction.response.send_message(embed=embed)
-"""
-
-
 
 @bot.tree.command(name="classement", description="afficher le classement")
 async def slash_command(interaction: discord.Interaction,ligue: str, poule_name:str = None):
@@ -356,17 +333,13 @@ async def slash_command(interaction: discord.Interaction,ligue: str, poule_name:
     ]
     total_content = ""
  
-    print("main")
-    print(dfClassement)
+
     
     for poule in pouleList:
 
-        print(list(dfClassement.columns),list(pouleList))
-        print(dfClassement)
         df_poule = dfClassement[dfClassement['Poule'].str.strip() == poule]
         df_poule = df_poule[["  Pseudo"," V" ," D","PTS"]]
-        print(df_poule)
-        
+
 
         # Convertir ce DataFrame comme vous l'avez fait précédemment
         header = ' | '.join(df_poule.columns)
@@ -402,10 +375,6 @@ async def slash_command(interaction: discord.Interaction,ligue: str, poule_name:
 @bot.command()
 async def av(ctx,member: discord.Member):
     await ctx.send(member.display_avatar)
-
-@bot.tree.command(name="avatar",description="Get user avatar")
-async def avatar(interaction:discord.Interaction,member:discord.Member):
-    await interaction.response.send_message(member.display_avatar)
 
 
 
