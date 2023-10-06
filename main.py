@@ -385,7 +385,7 @@ async def slash_command(interaction: discord.Interaction,ligue: str, poule_name:
     if len(total_content) > 2000:
         total_content = total_content[:2000] + "..."
 
-    with open('media/baniere.png', 'rb') as f:
+    with open(f'media/baniere/{ligue}.png', 'rb') as f:
         uploaded_image = await interaction.channel.send(file=discord.File(f))
         image_url = uploaded_image.attachments[0].url
 
