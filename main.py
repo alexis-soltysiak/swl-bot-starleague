@@ -48,6 +48,34 @@ async def on_ready():
     logger.info(f"Logged in as {bot.user.name}")
     await bot.tree.sync()
     
+    
+@bot.tree.command(name="liste", description="afficher la liste d'un joueur")
+async def slash_command(interaction: discord.Interaction, user: discord.User):
+
+    # Chargez le CSV dans un DataFrame
+    df = pd.read_csv("bdd/users.csv")
+    
+    
+        
+    user = f"{user.name}"
+    
+    print("user" ,user)
+    user = find_closest_match(user, df["Pseudo Discord"].tolist())
+
+
+    # Trouvez la ligne qui correspond au Pseudo Discord
+    matching_row = df[df["Pseudo Discord"] == user]
+    
+    print(user)
+    
+    # S'il y a une correspondance, retournez le lien. Sinon, retournez une chaîne vide ou un message d'erreur
+    if not matching_row.empty:
+        await interaction.response.send_message(content=f"Joueur trouvé : {user}\n{matching_row['Lien Armée'].iloc[0]}")
+
+    else:
+        await interaction.response.send_message(content="Pas de lien trouvé pour cet utilisateur.")
+
+    
 @bot.tree.command(name="calcul", description="calcul csv")
 async def slash_command(interaction: discord.Interaction):
     
@@ -64,25 +92,7 @@ async def slash_command(interaction: discord.Interaction):
 
 
 
-@bot.tree.command(name="liste", description="afficher la liste d'un joueur")
-async def slash_command(interaction: discord.Interaction, user: discord.User):
-    
-    # Chargez le CSV dans un DataFrame
-    df = pd.read_csv("bdd/classement.csv")
-    
-    # Trouvez la ligne qui correspond au Pseudo Discord
-    matching_row = df[df["Pseudo Discord"] == user]
-    
-    # S'il y a une correspondance, retournez le lien. Sinon, retournez une chaîne vide ou un message d'erreur
-    if not matching_row.empty:
-     
-        await interaction.response.send_message(content=matching_row["Lien Armée"].iloc[0])
-
-    else:
-        await interaction.response.send_message(content="Pas de lien trouvé pour cet utilisateur.")
-
         
-    # Éditer le message précédent pour indiquer que le traitement est terminé
     
 
 @bot.event
