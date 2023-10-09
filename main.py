@@ -82,11 +82,10 @@ async def slash_command(interaction: discord.Interaction):
     
     waitingMessage = await interaction.channel.send("Chargement en cours...")
 
-    await waitingMessage.delete()
-
     # Exécutez la fonction qui prend du temps
     update_all_results()
 
+    await waitingMessage.delete()
     # Éditer le message précédent pour indiquer que le traitement est terminé
     await interaction.response.send_message(content="✅ calcul fini!")
 
