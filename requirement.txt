@@ -2,3 +2,5 @@ discord.py
 pandas
 python-dotenv
 plotly
+kaleido
+selenium

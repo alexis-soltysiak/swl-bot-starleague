@@ -7,6 +7,10 @@ import plotly.io as pio
 import os
 import warnings
 import re
+import kaleido
+from selenium import webdriver
+import time
+import matplotlib.pyplot as plt
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -58,6 +62,99 @@ def dealWithSoS(classement):
       classement.loc[classement['Pseudo Discord'] == row["Pseudo Discord"], 'SoS'] = sum
 
   return classement
+
+def figSavingAndShowing(ligue,nomSave,fig):
+
+    # Afficher la figure dans un navigateur et la sauvegarder
+    filepath = "Results/"+ligue+"/"+str(nomSave)+".png"
+    
+    fig.savefig(filepath)
+    print(f"done for {filepath}")
+    return 
+
+
+
+def neon_plot(x, y, ax=None):
+    if ax is None:
+        ax = plt.gca()
+    line, = ax.plot(x, y, lw=1, zorder=6)
+    for cont in range(6, 1, -1):
+        ax.plot(x, y, lw=cont, color=line.get_color(), zorder=5, alpha=0.05)
+    return ax
+
+
+  
+def graphWinLose(dfMatchMerged, listWinLose, ligue):
+
+  data = []
+  for winner in listWinLose:
+
+    dfMatchMergedLigue = dfMatchMerged.copy()
+
+    if ligue != "Total":
+      dfMatchMergedLigue =  dfMatchMergedLigue[dfMatchMergedLigue["Ligue"] == ligue]
+
+    data.append(len(dfMatchMergedLigue[dfMatchMergedLigue["Vainqueur"] == winner]))
+
+
+  colors = ['RoyalBlue', 'red', 'LightGray']
+
+  fig, ax = plt.subplots(figsize=(8, 6))  # 800x600 en pixels
+  wedges, texts, autotexts = ax.pie(data, labels=listWinLose, colors=colors, 
+                                autopct='%1.1f%%', pctdistance=0.35,  # ajustez la valeur de pctdistance
+                                startangle=90, wedgeprops=dict(width=0.3, edgecolor='black'))
+
+  # Configuration de la taille et du style du texte
+  for t in texts:
+    t.set(size=20)
+  for t in autotexts:
+    t.set(size=20)
+
+  # Titre
+  ax.set_title("Win Rate Blue/Red/egalite", size=20)
+
+  return fig
+
+
+def graphPrObjectives(dfMatchMerged, listObjectives, ligue):
+
+  data = []
+  for objective in listObjectives:
+
+    dfMatchMergedLigue = dfMatchMerged.copy()
+
+    if ligue != "Total":
+      dfMatchMergedLigue =  dfMatchMergedLigue[dfMatchMergedLigue["Ligue"] == ligue]
+
+    data.append(len(dfMatchMergedLigue[dfMatchMergedLigue["Objectif"] == objective]))
+
+  colors = ['LightCyan', 'LightGoldenRodYellow', 'LightGray','LightGreen', 'LightPink', 'LightSalmon','LightSeaGreen', 'LightSkyBlue']
+
+
+  
+  # Créer le pie chart
+  fig, ax = plt.subplots(figsize=(15, 8))  # Ajuster la largeur pour accueillir la légende
+
+  wedges, texts = ax.pie(data, colors=colors, startangle=90, wedgeprops=dict(width=0.3, edgecolor='black'))
+
+  # Retirer les textes
+  for t in texts:
+      t.set_text("")  # vide les noms
+
+  # Titre
+  ax.set_title("Pick Rate Objectives", size=20)
+
+  # Légende agrandie
+  legend_labels = ["{} - {:.1f}%".format(obj, perc) for obj, perc in zip(listObjectives, 100.*np.array(data)/sum(data))]
+  ax.legend(wedges, legend_labels, title="Objectives", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1), prop={'size': 16})
+  # Décaler le diagramme circulaire vers la gauche
+  ax.set_position([0, 0.1, 0.6, 0.75])
+  # Ajustez la position de la légende
+
+
+    
+  return fig
+
 
 
 def update_all_results():
@@ -220,7 +317,7 @@ def update_all_results():
  
             #display(classement)
 
-            classement.to_csv("Results/Total/"+ str(index)+ ".csv",index=False)
+            #classement.to_csv("Results/Total/"+ str(index)+ ".csv",index=False)
 
             index+=1
 
@@ -321,4 +418,87 @@ def update_all_results():
     
     generalClassement.to_csv("bdd/classement.csv", index=False)
     
+    
+    
+    
+    dfListTmp = dfList.copy()
+    dfListTmp["Joueur Bleu"] = dfList["Pseudo Discord"]
+    dfMatchMerged = dfMatch.merge(dfListTmp, how='inner', on='Joueur Bleu')
+    dfMatchMerged = dfMatchMerged.drop(columns=["Adresse e-mail","Pseudo Discord","Pseudo","victory","defeat","egality",	"points"])
+
+    ####################################################################################
+    #WR
+    ####################################################################################
+    
+    #get objective list
+    listWinLose = list(dfMatchMerged["Vainqueur"].unique())
+
+    #remove Nan
+    listWinLose = [x for x in listWinLose if str(x) != 'nan']
+
+    #name of png and json
+    saveName = "WrBlueRed"
+    
+    ligue = "Total"
+    fig = graphWinLose(dfMatchMerged, listWinLose, ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
+    ligue = "Coruscant"
+    fig = graphWinLose(dfMatchMerged, listWinLose, ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+
+    ligue = "Alderaan"
+    fig = graphWinLose(dfMatchMerged, listWinLose, ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+
+    ligue = "Tatooine"
+    fig = graphWinLose(dfMatchMerged, listWinLose, ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+
+    ligue = "Kessel"
+    fig = graphWinLose(dfMatchMerged, listWinLose, ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
+    
+    ####################################################################################
+    #OBJECTIVE
+    ####################################################################################
+    
+    #get objective list
+    listObjectives = list(dfMatchMerged["Objectif"].unique())
+    #remove Nan
+    listObjectives = [x for x in listObjectives if str(x) != 'nan']
+
+    saveName = "PrObjectives"
+    
+    ligue = "Total"
+    fig = graphPrObjectives(dfMatchMerged, listObjectives, ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+
+
+    ligue = "Coruscant"
+    fig = graphPrObjectives(dfMatchMerged, listObjectives, ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
+    
+    ligue = "Alderaan"
+    fig = graphPrObjectives(dfMatchMerged, listObjectives, ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
+    
+    ligue = "Coruscant"
+    fig = graphPrObjectives(dfMatchMerged, listObjectives, ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
+    
+    ligue = "Kessel"
+    fig = graphPrObjectives(dfMatchMerged, listObjectives, ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
+    ligue = "Tatooine"
+    fig = graphPrObjectives(dfMatchMerged, listObjectives, ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
+    print("ere")
+
     return

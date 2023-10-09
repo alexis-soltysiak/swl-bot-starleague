@@ -79,15 +79,18 @@ async def slash_command(interaction: discord.Interaction, user: discord.User):
 @bot.tree.command(name="calcul", description="calcul csv")
 async def slash_command(interaction: discord.Interaction):
     
+    await interaction.response.defer()
     
-    waitingMessage = await interaction.channel.send("Chargement en cours...")
+    #waitingMessage = await interaction.channel.send("Chargement en cours...")
 
     # Exécutez la fonction qui prend du temps
     update_all_results()
 
-    await waitingMessage.delete()
-    # Éditer le message précédent pour indiquer que le traitement est terminé
-    await interaction.response.send_message(content="✅ calcul fini!")
+    #await waitingMessage.delete()
+    
+    print("gogogo")
+    await interaction.followup.send(content="✅ calcul fini!")
+
 
 
 
@@ -267,26 +270,68 @@ async def on_message(message):
 
 
 
-@bot.tree.command(name="wr",description="test")
+@bot.tree.command(name="wr",description="get the wr diagram")
 async def slash_command(interaction: discord.Interaction):
-    # Télécharger l'image sur Discord
-    with open('media/test.png', 'rb') as f:
-        uploaded_image = await interaction.channel.send(file=discord.File(f))
-        image_url = uploaded_image.attachments[0].url
-
-    # Créer un embed
-    embed = discord.Embed(title=f"Win rate general")
-
-    # Utiliser l'URL de l'image téléchargée pour l'embed
-    embed.set_image(url=image_url)
     
-    embed.description = "test"
+    filesListe = ["Total", "Coruscant", "Tatooine", "Alderaan", "Kessel"]
 
+    # Répondre initialement à l'interaction
+    await interaction.response.send_message("Uploading graphs...", ephemeral=True)
 
-    # Supprimer le message avec l'image téléchargée pour ne pas encombrer le canal
-    await uploaded_image.delete()
+    for file in filesListe:
+        # Construire le chemin du fichier à partir de la liste
+        file_path = f'Results/{file}/WrBlueRed.png'
 
-    await interaction.response.send_message(embed=embed)
+        # Télécharger l'image sur Discord
+        with open(file_path, 'rb') as f:
+            uploaded_image = await interaction.channel.send(file=discord.File(f))
+            image_url = uploaded_image.attachments[0].url
+
+        # Créer un embed pour l'image
+        embed = discord.Embed(title=f"Win rate for {file}")
+
+        # Utiliser l'URL de l'image téléchargée pour l'embed
+        embed.set_image(url=image_url)
+        
+        embed.description = f'WR Blue/red for {file}'
+
+        # Supprimer le message avec l'image téléchargée pour ne pas encombrer le canal
+        await uploaded_image.delete()
+
+        # Envoyer le message embed au canal
+        await interaction.channel.send(embed=embed)
+        
+
+@bot.tree.command(name="obj",description="Get the list of objective")
+async def slash_command(interaction: discord.Interaction):
+    
+    filesListe = ["Total", "Coruscant", "Tatooine", "Alderaan", "Kessel"]
+
+    # Répondre initialement à l'interaction
+    await interaction.response.send_message("Uploading graphs...", ephemeral=True)
+
+    for file in filesListe:
+        # Construire le chemin du fichier à partir de la liste
+        file_path = f'Results/{file}/PrObjectives.png'
+
+        # Télécharger l'image sur Discord
+        with open(file_path, 'rb') as f:
+            uploaded_image = await interaction.channel.send(file=discord.File(f))
+            image_url = uploaded_image.attachments[0].url
+
+        # Créer un embed pour l'image
+        embed = discord.Embed(title=f"Objective rate for {file}")
+
+        # Utiliser l'URL de l'image téléchargée pour l'embed
+        embed.set_image(url=image_url)
+        
+        embed.description = f'Objective Blue/red for {file}'
+
+        # Supprimer le message avec l'image téléchargée pour ne pas encombrer le canal
+        await uploaded_image.delete()
+
+        # Envoyer le message embed au canal
+        await interaction.channel.send(embed=embed)
 
 
 
