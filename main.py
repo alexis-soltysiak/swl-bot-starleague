@@ -302,7 +302,7 @@ async def slash_command(interaction: discord.Interaction):
         await interaction.channel.send(embed=embed)
         
 
-@bot.tree.command(name="obj",description="Get the list of objective")
+@bot.tree.command(name="objective",description="Get the list of objective")
 async def slash_command(interaction: discord.Interaction):
     
     filesListe = ["Total", "Coruscant", "Tatooine", "Alderaan", "Kessel"]
@@ -326,6 +326,139 @@ async def slash_command(interaction: discord.Interaction):
         embed.set_image(url=image_url)
         
         embed.description = f'Objective Blue/red for {file}'
+
+        # Supprimer le message avec l'image téléchargée pour ne pas encombrer le canal
+        await uploaded_image.delete()
+
+        # Envoyer le message embed au canal
+        await interaction.channel.send(embed=embed)
+
+
+@bot.tree.command(name="deploiement",description="Get the list of deploiement")
+async def slash_command(interaction: discord.Interaction):
+    
+    filesListe = ["Total", "Coruscant", "Tatooine", "Alderaan", "Kessel"]
+
+    # Répondre initialement à l'interaction
+    await interaction.response.send_message("Uploading graphs...", ephemeral=True)
+
+    for file in filesListe:
+        # Construire le chemin du fichier à partir de la liste
+        file_path = f'Results/{file}/PrDeploiement.png'
+
+        # Télécharger l'image sur Discord
+        with open(file_path, 'rb') as f:
+            uploaded_image = await interaction.channel.send(file=discord.File(f))
+            image_url = uploaded_image.attachments[0].url
+
+        # Créer un embed pour l'image
+        embed = discord.Embed(title=f"Deploiement rate for {file}")
+
+        # Utiliser l'URL de l'image téléchargée pour l'embed
+        embed.set_image(url=image_url)
+        
+        embed.description = f'Deploiement Blue/red for {file}'
+
+        # Supprimer le message avec l'image téléchargée pour ne pas encombrer le canal
+        await uploaded_image.delete()
+
+        # Envoyer le message embed au canal
+        await interaction.channel.send(embed=embed)
+
+
+@bot.tree.command(name="condition",description="Get the list of condition")
+async def slash_command(interaction: discord.Interaction):
+    
+    filesListe = ["Total", "Coruscant", "Tatooine", "Alderaan", "Kessel"]
+
+    # Répondre initialement à l'interaction
+    await interaction.response.send_message("Uploading graphs...", ephemeral=True)
+
+    for file in filesListe:
+        # Construire le chemin du fichier à partir de la liste
+        file_path = f'Results/{file}/PrCondition.png'
+
+        # Télécharger l'image sur Discord
+        with open(file_path, 'rb') as f:
+            uploaded_image = await interaction.channel.send(file=discord.File(f))
+            image_url = uploaded_image.attachments[0].url
+
+        # Créer un embed pour l'image
+        embed = discord.Embed(title=f"Condition rate for {file}")
+
+        # Utiliser l'URL de l'image téléchargée pour l'embed
+        embed.set_image(url=image_url)
+        
+        embed.description = f'Condition Blue/red for {file}'
+
+        # Supprimer le message avec l'image téléchargée pour ne pas encombrer le canal
+        await uploaded_image.delete()
+
+        # Envoyer le message embed au canal
+        await interaction.channel.send(embed=embed)
+
+
+"""
+
+@bot.tree.command(name="factionformat",description="Get the list of condition")
+async def slash_command(interaction: discord.Interaction):
+    
+    filesListe = ["Total", "Coruscant", "Tatooine", "Alderaan", "Kessel"]
+
+    # Répondre initialement à l'interaction
+    await interaction.response.send_message("Uploading graphs...", ephemeral=True)
+
+    for file in filesListe:
+        # Construire le chemin du fichier à partir de la liste
+        file_path = f'Results/{file}/FactionFormat.png'
+
+        # Télécharger l'image sur Discord
+        with open(file_path, 'rb') as f:
+            uploaded_image = await interaction.channel.send(file=discord.File(f))
+            image_url = uploaded_image.attachments[0].url
+
+        # Créer un embed pour l'image
+        embed = discord.Embed(title=f"FactionFormat rate for {file}")
+
+        # Utiliser l'URL de l'image téléchargée pour l'embed
+        embed.set_image(url=image_url)
+        
+        embed.description = f'FactionFormat Blue/red for {file}'
+
+        # Supprimer le message avec l'image téléchargée pour ne pas encombrer le canal
+        await uploaded_image.delete()
+
+        # Envoyer le message embed au canal
+        await interaction.channel.send(embed=embed)
+
+
+"""
+
+
+@bot.tree.command(name="bid",description="Get the list of bid")
+async def slash_command(interaction: discord.Interaction):
+    
+    filesListe = ["Total", "Coruscant", "Tatooine", "Alderaan", "Kessel"]
+
+    # Répondre initialement à l'interaction
+    await interaction.response.send_message("Uploading graphs...", ephemeral=True)
+
+    for file in filesListe:
+        # Construire le chemin du fichier à partir de la liste
+        file_path = f'Results/{file}/meanBid.png'
+
+        # Télécharger l'image sur Discord
+        with open(file_path, 'rb') as f:
+            uploaded_image = await interaction.channel.send(file=discord.File(f))
+            image_url = uploaded_image.attachments[0].url
+
+        # Créer un embed pour l'image
+        embed = discord.Embed(title=f"bid rate for {file}")
+
+        # Utiliser l'URL de l'image téléchargée pour l'embed
+        embed.set_image(url=image_url)
+        
+        embed.description = f'bid Blue/red for {file}'
 
         # Supprimer le message avec l'image téléchargée pour ne pas encombrer le canal
         await uploaded_image.delete()

@@ -116,6 +116,9 @@ def graphWinLose(dfMatchMerged, listWinLose, ligue):
   return fig
 
 
+
+
+
 def graphPrObjectives(dfMatchMerged, listObjectives, ligue):
 
   data = []
@@ -129,7 +132,6 @@ def graphPrObjectives(dfMatchMerged, listObjectives, ligue):
     data.append(len(dfMatchMergedLigue[dfMatchMergedLigue["Objectif"] == objective]))
 
   colors = ['LightCyan', 'LightGoldenRodYellow', 'LightGray','LightGreen', 'LightPink', 'LightSalmon','LightSeaGreen', 'LightSkyBlue']
-
 
   
   # Créer le pie chart
@@ -149,11 +151,255 @@ def graphPrObjectives(dfMatchMerged, listObjectives, ligue):
   ax.legend(wedges, legend_labels, title="Objectives", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1), prop={'size': 16})
   # Décaler le diagramme circulaire vers la gauche
   ax.set_position([0, 0.1, 0.6, 0.75])
-  # Ajustez la position de la légende
-
 
     
   return fig
+
+
+
+def graphPrDeploiement(dfMatchMerged, listDeployement, ligue):
+
+  data = []
+  for deployement in listDeployement:
+
+    dfMatchMergedLigue = dfMatchMerged.copy()
+
+    if ligue != "Total":
+      dfMatchMergedLigue =  dfMatchMergedLigue[dfMatchMergedLigue["Ligue"] == ligue]
+
+    data.append(len(dfMatchMergedLigue[dfMatchMergedLigue["Déploiement"] == deployement]))
+
+  colors = ['LightCyan', 'LightGoldenRodYellow', 'LightGray','LightGreen', 'LightPink', 'LightSalmon','LightSeaGreen', 'LightSkyBlue']
+
+  # Créer le pie chart
+  fig, ax = plt.subplots(figsize=(15, 8))  # Ajuster la largeur pour accueillir la légende
+
+  wedges, texts = ax.pie(data, colors=colors, startangle=90, wedgeprops=dict(width=0.3, edgecolor='black'))
+
+  # Retirer les textes
+  for t in texts:
+      t.set_text("")  # vide les noms
+
+  # Titre
+  ax.set_title("Pick Rate Deployement", size=20)
+
+  # Légende agrandie
+  legend_labels = ["{} - {:.1f}%".format(obj, perc) for obj, perc in zip(listDeployement, 100.*np.array(data)/sum(data))]
+  ax.legend(wedges, legend_labels, title="Deployement", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1), prop={'size': 16})
+  # Décaler le diagramme circulaire vers la gauche
+  ax.set_position([0, 0.1, 0.6, 0.75])
+    
+  return fig
+
+
+
+def graphPCondition(dfMatchMerged, listCondition, ligue):
+
+  data = []
+  for condition in listCondition:
+
+    dfMatchMergedLigue = dfMatchMerged.copy()
+
+    if ligue != "Total":
+      dfMatchMergedLigue =  dfMatchMergedLigue[dfMatchMergedLigue["Ligue"] == ligue]
+
+    data.append(len(dfMatchMergedLigue[dfMatchMergedLigue["Condition"] == condition]))
+
+  colors = ['LightCyan', 'LightGoldenRodYellow', 'LightGray','LightGreen', 'LightPink', 'LightSalmon','LightSeaGreen', 'LightSkyBlue']
+
+  # Créer le pie chart
+  fig, ax = plt.subplots(figsize=(15, 8))  # Ajuster la largeur pour accueillir la légende
+
+  wedges, texts = ax.pie(data, colors=colors, startangle=90, wedgeprops=dict(width=0.3, edgecolor='black'))
+
+  # Retirer les textes
+  for t in texts:
+      t.set_text("")  # vide les noms
+
+  # Titre
+  ax.set_title("Pick Rate Condition", size=20)
+
+  # Légende agrandie
+  legend_labels = ["{} - {:.1f}%".format(obj, perc) for obj, perc in zip(listCondition, 100.*np.array(data)/sum(data))]
+  ax.legend(wedges, legend_labels, title="Condition", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1), prop={'size': 16})
+  # Décaler le diagramme circulaire vers la gauche
+  ax.set_position([0, 0.1, 0.6, 0.75])
+  
+  return fig
+
+
+def calculationFactionFormat(dfList, ligue,dfFinalResults):
+  dfListFaction = dfList.copy()
+
+  if ligue != "Total":
+    dfListFaction =  dfListFaction[dfListFaction["Ligue"] == ligue]
+
+
+  listLabels = [ligue]
+  listParents = [""]
+  listValues= [len(dfListFaction)]
+
+
+  labels = list(dfListFaction["Faction"].unique())
+  lineInDf = 0
+
+  values = []
+  for i in labels :
+    listLabels.append(i)
+    listParents.append(ligue)
+    listValues.append(len(dfListFaction[dfListFaction["Faction"] == i ]))
+
+  somme = sum(listValues)
+
+  for j in labels :
+
+    dfFinalResultWR = dfFinalResults.copy()
+    if ligue != "Total":
+      dfFinalResultWR =  dfFinalResultWR[dfFinalResultWR["Ligue"] == ligue]
+    dfFinalResultWR = dfFinalResultWR[dfFinalResultWR['Faction']== j ]
+    formatLabels = dfFinalResultWR["Format"].unique()
+
+    for format in formatLabels :
+      dfTMP = dfFinalResultWR[dfFinalResultWR['Format'] == format]
+      listLabels.append(format + " ("+ j[0] + ")")
+      listParents.append(j)
+      listValues.append(len(dfTMP))
+
+
+  # Mettez en place la figure et les axes
+  fig, ax = plt.subplots(figsize=(10, 10))
+
+  # Calcul des tailles et des labels pour les secteurs de premier niveau
+  sizes = listValues[:len(labels)+1]
+  labels = listLabels[:len(labels)+1]
+
+  # Diagramme à secteurs pour le premier niveau
+  ax.pie(sizes, labels=labels, startangle=90, wedgeprops=dict(width=0.3))
+
+  # Diagramme à secteurs pour le second niveau
+  sizes_inner = listValues[len(labels)+1:]
+  labels_inner = listLabels[len(labels)+1:]
+
+  ax.pie(sizes_inner, labels=labels_inner, radius=0.7, startangle=90, wedgeprops=dict(width=0.3))
+
+  return fig
+
+
+
+def calculationWRPerFactionPerFormat(dfFinalResults,ligue):
+
+  dfFinalResultWR = dfFinalResults.copy()
+  if ligue != "Total":
+    dfFinalResultWR =  dfFinalResultWR[dfFinalResultWR["Ligue"] == ligue]
+
+  factionsLabels = dfFinalResultWR["Faction"].unique()
+
+  factionWRGlobal = []
+  factionWRStandart = []
+  factionWRBi = []
+
+  for faction in factionsLabels :
+    dfTMP = dfFinalResultWR[dfFinalResultWR['Faction'] == faction]
+    
+    denominator = dfTMP["victory"].sum() + dfTMP["defeat"].sum()
+    if denominator != 0:
+        factionWRGlobal.append(100 * round(dfTMP["victory"].sum() / denominator, 3))
+    else:
+        factionWRGlobal.append(0)  # ou toute autre valeur par défaut ou traitement d'erreur
+
+    dfTMP = dfFinalResultWR[dfFinalResultWR['Faction'] == faction]
+
+    dfTMP = dfTMP[dfTMP["Format"] == "Standard"]
+    denominator = dfTMP["victory"].sum() + dfTMP["defeat"].sum()
+    if denominator != 0:
+        factionWRStandart.append(100 * round(dfTMP["victory"].sum() / denominator, 3))
+    else:
+        factionWRStandart.append(0)  # ou toute autre valeur par défaut ou traitement d'erreur
+
+    dfTMP = dfFinalResultWR[dfFinalResultWR['Faction'] == faction]
+    dfTMP = dfTMP[dfTMP["Format"] != "Standard"]
+    denominator = dfTMP["victory"].sum() + dfTMP["defeat"].sum()
+    if denominator != 0:
+        factionWRBi.append(100 * round(dfTMP["victory"].sum() / denominator, 3))
+    else:
+        factionWRBi.append(0)  # ou toute autre valeur par défaut ou traitement d'erreur
+
+
+
+  zipped_lists = zip(factionWRGlobal, factionsLabels,factionWRStandart,factionWRBi)
+  sorted_pairs = sorted(zipped_lists,reverse = True)
+  tuples = zip(*sorted_pairs)
+  factionWRGlobal, factionsLabels,factionWRStandart,factionWRBi = [ list(tuple) for tuple in  tuples]
+
+
+  barWidth = 0.25
+  r1 = np.arange(len(factionWRGlobal))
+  r2 = [x + barWidth for x in r1]
+  r3 = [x + barWidth for x in r2]
+
+  fig, ax = plt.subplots(figsize=(10, 6))
+
+  # Création des barres
+  ax.bar(r1, factionWRGlobal, width=barWidth, label='Global')
+  ax.bar(r2, factionWRStandart, width=barWidth, label='Standard')
+  ax.bar(r3, factionWRBi, width=barWidth, label='Battle Force')
+
+  # Ajout des labels, titres, etc.
+  ax.set_xlabel('Factions', fontweight='bold')
+  ax.set_xticks([r + barWidth for r in range(len(factionWRGlobal))])
+  ax.set_xticklabels(factionsLabels)
+
+  # Ajout des pourcentages sur les barres
+  for i in range(len(r1)):
+      ax.text(r1[i], factionWRGlobal[i] + 1, f"{factionWRGlobal[i]:.0f}%", ha='center')
+      ax.text(r2[i], factionWRStandart[i] + 1, f"{factionWRStandart[i]:.0f}%", ha='center')
+      ax.text(r3[i], factionWRBi[i] + 1, f"{factionWRBi[i]:.0f}%", ha='center')
+
+  # Lignes et zones colorées
+  ax.axhline(y=50, color='grey', linestyle='--', linewidth=0.5)
+  ax.axhspan(50, 100, facecolor='green', alpha=0.1)
+  ax.axhspan(0, 50, facecolor='red', alpha=0.1)
+
+  # Configuration de l'axe des y pour les pourcentages
+  ax.set_yticks([10, 20, 30, 40, 50, 60, 70, 80, 90])
+  ax.set_yticklabels(["10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%"])
+
+  # Légende
+  ax.legend()
+
+  return fig
+
+
+def calculationBid(dfFinalResults,ligue):
+
+  dfFinalResultWR = dfFinalResults.copy()
+  
+
+  if ligue != "Total":
+    dfFinalResultWR =  dfFinalResultWR[dfFinalResultWR["Ligue"] == ligue]
+
+  dfFinalResultWR["bid"] = 800 - dfFinalResultWR["Nombre de points"]
+  bidMean = round(dfFinalResultWR["bid"].mean(),2)
+  
+
+  # Initialisation de la figure et de l'axe
+  fig, ax = plt.subplots(figsize=(10,3))  # dimensions 300x300 pixels
+
+  # Masquer les axes
+  ax.axis('off')
+
+  # Afficher le titre "Bid Moyen" en bas de la valeur
+  ax.text(0.5, 0.8, "Bid Moyen", ha='center', va='center', fontsize=20, transform=ax.transAxes)
+
+  # Afficher la valeur de bidMean au centre de l'axe
+  ax.text(0.5, 0.3, str(bidMean), ha='center', va='center', fontsize=30, transform=ax.transAxes)
+
+  plt.tight_layout()
+
+
+  return fig
+
+
 
 
 
@@ -499,6 +745,153 @@ def update_all_results():
     fig = graphPrObjectives(dfMatchMerged, listObjectives, ligue)
     figSavingAndShowing(ligue,saveName,fig)
     
-    print("ere")
+    ####################################################################################
+    #DEPLOYEMENT
+    ####################################################################################
+    
+    #get objective list
+    listDeployement = list(dfMatchMerged["Déploiement"].unique())
 
+    #remove Nan
+    listDeployement = [x for x in listDeployement if str(x) != 'nan']
+
+    #name of png and json
+    saveName = "PrDeploiement"
+    
+    ligue = "Total"
+    fig = graphPrDeploiement(dfMatchMerged, listDeployement, ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
+    ligue = "Coruscant"
+    fig = graphPrDeploiement(dfMatchMerged, listDeployement, ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
+    ligue = "Alderaan"
+    fig = graphPrDeploiement(dfMatchMerged, listDeployement, ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+
+    ligue = "Tatooine"
+    fig = graphPrDeploiement(dfMatchMerged, listDeployement, ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
+    ligue = "Kessel"
+    fig = graphPrDeploiement(dfMatchMerged, listDeployement, ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+
+    
+    ####################################################################################
+    #CONDITION
+    ####################################################################################
+
+    #get CONDITION list
+    listCondition = list(dfMatchMerged["Condition"].unique())
+
+    #remove Nan
+    listCondition = [x for x in listCondition if str(x) != 'nan']
+
+    #name of png and json
+    saveName = "PrCondition"
+
+    ligue = "Total"
+    fig = graphPCondition(dfMatchMerged, listCondition, ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
+    ligue = "Coruscant"
+    fig = graphPCondition(dfMatchMerged, listCondition, ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+
+    ligue = "Alderaan"
+    fig = graphPCondition(dfMatchMerged, listCondition, ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
+    ligue = "Tatooine"
+    fig = graphPCondition(dfMatchMerged, listCondition, ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+
+    ligue = "Kessel"
+    fig = graphPCondition(dfMatchMerged, listCondition, ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
+    """
+    ####################################################################################
+    #FORMAT WR
+    ####################################################################################
+
+    saveName = "FactionFormat"
+    
+    ligue = "Total"
+    fig = calculationFactionFormat(dfList,ligue,dfFinalResults)
+    figSavingAndShowing(ligue,saveName,fig)
+
+    ligue = "Coruscant"
+    fig = calculationFactionFormat(dfList,ligue,dfFinalResults)
+    figSavingAndShowing(ligue,saveName,fig)
+
+    ligue = "Alderaan"
+    fig = calculationFactionFormat(dfList,ligue,dfFinalResults)
+    figSavingAndShowing(ligue,saveName,fig)
+
+    ligue = "Tatooine"
+    fig = calculationFactionFormat(dfList,ligue,dfFinalResults)
+    figSavingAndShowing(ligue,saveName,fig)
+
+    ligue = "Kessel"
+    fig = calculationFactionFormat(dfList,ligue,dfFinalResults)
+    figSavingAndShowing(ligue,saveName,fig)
+
+    ####################################################################################
+    #FORMAT WRperFaction
+    ####################################################################################
+
+    saveName = "WRPerFactionPerFormat"
+    
+    
+    ligue = "Total"
+    fig = calculationWRPerFactionPerFormat(dfFinalResults,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+
+    ligue = "Coruscant"
+    fig = calculationWRPerFactionPerFormat(dfFinalResults,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+
+    ligue = "Alderaan"
+    fig = calculationWRPerFactionPerFormat(dfFinalResults,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+
+    ligue = "Tatooine"
+    fig = calculationWRPerFactionPerFormat(dfFinalResults,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+
+    ligue = "Kessel"
+    fig = calculationWRPerFactionPerFormat(dfFinalResults,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+
+    """
+    
+    ####################################################################################
+    #meanbid
+    ####################################################################################
+    
+    saveName = "meanBid"
+    
+    ligue = "Total"
+    fig = calculationBid(dfFinalResults,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
+    ligue = "Coruscant"
+    fig = calculationBid(dfFinalResults,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+
+    ligue = "Alderaan"
+    fig = calculationBid(dfFinalResults,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+
+    ligue = "Tatooine"
+    fig = calculationBid(dfFinalResults,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+
+    ligue = "Kessel"
+    fig = calculationBid(dfFinalResults,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
     return
