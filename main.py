@@ -450,7 +450,11 @@ async def slash_command(interaction: discord.Interaction):
         await uploaded_image.delete()
 
         # Envoyer le message embed au canal
-        await interaction.channel.send(embed=embed)
+        message = await interaction.channel.send(embed=embed)  
+        await asyncio.sleep(60)
+
+        # Supprimer le message
+        await message.delete()
         
 
 @bot.tree.command(name="objective",description="Get the list of objective")
