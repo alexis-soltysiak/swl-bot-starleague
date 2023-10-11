@@ -895,3 +895,30 @@ def update_all_results():
     figSavingAndShowing(ligue,saveName,fig)
     
     return
+
+
+
+def find_late_guys():
+  
+    
+
+  # Lire le fichier CSV
+  df = pd.read_csv('bdd/classement.csv')
+
+  # Trouver le plus petit nombre de matchs joués
+  min_matches = df['nbMatchPlayed'].min()
+
+  # Filtrer la DataFrame pour obtenir seulement les lignes avec le plus petit nombre de matchs joués
+  filtered_df = df[df['nbMatchPlayed'] == min_matches]
+
+  # Si nous avons moins de 5 joueurs avec le minimum de matchs joués, nous incluons aussi ceux avec le deuxième minimum
+  if len(filtered_df) < 5:
+      second_min_matches = df[df['nbMatchPlayed'] > min_matches]['nbMatchPlayed'].min()
+      second_filtered_df = df[df['nbMatchPlayed'] == second_min_matches]
+      filtered_df = pd.concat([filtered_df, second_filtered_df])
+
+  # Récupérer la liste des pseudos
+  pseudos = filtered_df['Pseudo'].tolist()
+  
+  return pseudos
+  

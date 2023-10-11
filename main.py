@@ -1,4 +1,5 @@
 # Importing Some stuff for our bot
+from typing import Any, Optional
 import discord
 from discord.ext import commands
 import os
@@ -10,8 +11,11 @@ import pandas as pd
 import re
 from dotenv import load_dotenv
 import difflib
+from discord import SelectMenu, SelectOption, Interaction
+from discord.ext import commands, menus
+from discord import Embed, Color
 
-from functions import update_all_results
+from functions import update_all_results, find_late_guys
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -23,9 +27,12 @@ load_dotenv()
 token = os.getenv("token")
 
 intents = discord.Intents.default() # Creating default intents
+intents.members = True
 intents.message_content = True # Giving our bot permission to send and read messages
 
 bot = commands.Bot(command_prefix="/",intents=intents) # Creating bot
+
+bot.remove_command('help')
 
 ligueList = ["Coruscant","Tatooine","Alderaan","Kessel"]
 pouleList = ["A","B","C","D"]
@@ -37,11 +44,12 @@ def find_closest_match(input_str, choices):
     else:
         return None
     
-    
-# Our First Command
-@bot.command()
-async def hello(ctx):
-    await ctx.send("Hey!")
+def find_closest_match_0_8(input_str, choices):
+    matches = difflib.get_close_matches(input_str, choices, n=1,cutoff=0.9)  # n=1 signifie que nous voulons seulement la meilleure correspondance
+    if matches:
+        return matches[0]
+    else:
+        return None
 
 @bot.event
 async def on_ready():
@@ -49,25 +57,68 @@ async def on_ready():
     await bot.tree.sync()
     
     
+@bot.event
+async def on_command_error(ctx, error):
+    # Vous pouvez ajouter d'autres logiques ici pour gérer différents types d'erreurs
+    # Mais pour l'instant, nous allons simplement envoyer l'embed d'aide.
+    if isinstance(error, commands.CommandNotFound):  # Si la commande n'est pas trouvée
+        await help(ctx)
+        
+        
+@bot.command()
+async def help(ctx):
+    embed = Embed(title="Besoin d'aide ?")
+    embed.add_field(name="\u2001", value="\n", inline=False)
+    embed.add_field(name="\u2001", value="\n", inline=False)
+    embed.add_field(name="\u2001", value="\n", inline=False)
+
+
+    embed.add_field(name="**🏆\u2001\u2001/classement [nom de la ligue]**", value="Permet d'afficher le classement de la Ligue", inline=False)
+    embed.add_field(name="\u2001", value="\n", inline=False)
+
+    embed.add_field(name="**🏆\u2001\u2001/classement [nom de la ligue] [nom de la poule] **", value="Permet d'afficher le classement de la Ligue pour la poule voulu", inline=False)
+    embed.add_field(name="\u2001", value="\n", inline=False)
+
+    embed.add_field(name="**📜\u2001\u2001/liste [@joueur]**", value="Permet d'afficher le lien de la liste du joueur", inline=False)
+    embed.add_field(name="\u2001", value="\n", inline=False)
+
+    embed.add_field(name="**☎️\u2001\u2001/retardataires **", value="Permet de ping les joueurs avec le moins de match", inline=False)
+    embed.add_field(name="\u2001", value="\n", inline=False)
+
+    embed.add_field(name="**📊\u2001\u2001/wr**", value="Affiche les graphiques des win rate Joueur Bleu / Joueur rouge", inline=False)
+    embed.add_field(name="\u2001", value="\n", inline=False)
+
+
+    embed.add_field(name="**📊\u2001\u2001/objective**", value="Affiche les graphiques de la répartition des objectifs", inline=False)
+    embed.add_field(name="\u2001", value="\n", inline=False)
+    
+    
+    embed.add_field(name="**📊\u2001\u2001/deploiement**", value="Affiche les graphiques de la répartition des déploiments", inline=False)
+    embed.add_field(name="\u2001", value="\n", inline=False)
+    
+    embed.add_field(name="**📊\u2001\u2001/condition**", value="Affiche les graphiques de la répartition des conditions", inline=False)
+    embed.add_field(name="\u2001", value="\n", inline=False)
+    
+    🔄
+    await ctx.send(embed=embed)
+  
+
+    
 @bot.tree.command(name="liste", description="afficher la liste d'un joueur")
 async def slash_command(interaction: discord.Interaction, user: discord.User):
 
     # Chargez le CSV dans un DataFrame
     df = pd.read_csv("bdd/users.csv")
     
-    
         
     user = f"{user.name}"
     
-    print("user" ,user)
     user = find_closest_match(user, df["Pseudo Discord"].tolist())
 
 
     # Trouvez la ligne qui correspond au Pseudo Discord
     matching_row = df[df["Pseudo Discord"] == user]
-    
-    print(user)
-    
+
     # S'il y a une correspondance, retournez le lien. Sinon, retournez une chaîne vide ou un message d'erreur
     if not matching_row.empty:
         await interaction.response.send_message(content=f"Joueur trouvé : {user}\n{matching_row['Lien Armée'].iloc[0]}")
@@ -88,14 +139,37 @@ async def slash_command(interaction: discord.Interaction):
 
     #await waitingMessage.delete()
     
-    print("gogogo")
     await interaction.followup.send(content="✅ calcul fini!")
 
 
+"""
 
+class Match(discord.ui.Select):
+    def __init__(self):
+        options=[
+            discord.SelectOption(label="Option 1",emoji="👌",description="This is option 1!"),
+            discord.SelectOption(label="Option 2",emoji="✨",description="This is option 2!"),
+            discord.SelectOption(label="Option 3",emoji="🎭",description="This is option 3!")
+            ]
+        super().__init__(placeholder="Select an option",max_values=1,min_values=1,options=options)
+        
+    async def callback(self, interaction: Interaction) :
+        await interaction.response.send_message(f"you chose `{self.values[0]}`")
 
         
+class matchView(discord.ui.View):
+    def __init__(self):
+        super().__init__()
+        self.add_item(Match())
+
+@bot.command()
+async def match(ctx:commands.Context):
+    await ctx.send("Test",view = matchView())
+
+"""
+
     
+
 
 @bot.event
 async def on_message(message):
@@ -103,7 +177,7 @@ async def on_message(message):
     if message.channel.id == 1158499018960277675:  # Remplacez XXXXXXXXXXXXX par l'ID de votre canal
         lines = message.content.split("\n")
         
-        if len(lines) >= 11:
+        if len(lines) == 11:
             
             actualTime = datetime.now()
             mail = "martinpourrat@hotmail.com"
@@ -111,42 +185,49 @@ async def on_message(message):
                 phase = lines[0].strip()
             except : 
                 await message.channel.send("❌ Erreur : phase mal enregistrée ")
+                return
 
             try : 
                 leagueName = lines[1].strip()
             except : 
                 await message.channel.send("❌ Erreur : nom de league mal enregistré ")
-                
+                return
+            
             try : 
                 poule = lines[2].strip()
             except : 
                 await message.channel.send("❌ Erreur : poule mal enregistrée ")
-                
+                return
+            
             try : 
                 mission = lines[7].strip()
             except : 
                 await message.channel.send("❌ Erreur : mission mal enregistrée ")
-                
+                return
+            
             try : 
                 deploiement = lines[8].strip()
             except : 
                 await message.channel.send("❌ Erreur : deploiement mal enregistré ")
-                
+                return
+            
             try : 
                 conditions = lines[9].strip()
             except : 
                 await message.channel.send("❌ Erreur : condition mal enregistré ")
+                return
             
             try : 
                 kpBleu = int(lines[10].strip())
             except : 
                 await message.channel.send("❌ Erreur : kp bleu  mal enregistré ")
+                return
             
             try :    
                 kpRouge = int(lines[11].strip())
             except : 
                 await message.channel.send("❌ Erreur : kp rouge mal enregistré ")
-
+                return
             try : 
                 # Découper la chaîne de score
                 score_parts = lines[6].split("-")
@@ -154,7 +235,7 @@ async def on_message(message):
                 score_2 = int(score_parts[1].strip())
             except : 
                 await message.channel.send("❌ Erreur : score mal enregistré ")
-
+                return
             try : 
                 match = re.match(r'<@!?(\d+)>', lines[3])
                 
@@ -169,9 +250,11 @@ async def on_message(message):
                         joueurBleu = "None"
                 else: 
                     await message.channel.send("❌ Erreur : Joueur Bleu mal enregistré ")
+                    return
 
             except : 
                 await message.channel.send("❌ Erreur : Joueur Bleu mal enregistré ")  
+                return
               
             try :       
                 match = re.match(r'<@!?(\d+)>', lines[4])
@@ -188,8 +271,11 @@ async def on_message(message):
                     print("eeee")
                 else : 
                     await message.channel.send("❌ Erreur : Joueur Rouge mal enregistré ")
+                    return
+                
             except : 
                 await message.channel.send("❌ Erreur : Joueur Rouge mal enregistré ")
+                return
             
             try : 
                 match = re.match(r'<@!?(\d+)>', lines[5])
@@ -204,9 +290,11 @@ async def on_message(message):
                         winner = "None"
                 else : 
                     await message.channel.send("❌ Erreur : winner mal enregistré ")
+                    return
 
             except : 
                 await message.channel.send("❌ Erreur : le nom du winner mal enregistré ") 
+                return
 
             # Assurez-vous que le score le plus élevé va au gagnant
             if winner == joueurBleu:
@@ -235,6 +323,7 @@ async def on_message(message):
                 df = pd.read_csv('bdd/match.csv')
             except : 
                 await message.channel.send("❌ Erreur : csv mal lu") 
+                return
                 
             # 2. Créer une nouvelle ligne sous forme de dictionnaire
             nouvelle_ligne = {
@@ -257,11 +346,13 @@ async def on_message(message):
                 df.loc[len(df)] = nouvelle_ligne
             except : 
                 await message.channel.send("❌ Erreur : csv , nouvelle ligne mal enregistrée") 
+                return
 
             try :
                 df.to_csv('bdd/match.csv', index=False)
             except : 
                 await message.channel.send("❌ Erreur : sauvegarde csv ") 
+                return
             
             await message.channel.send("✅ Match bien enrigstré ")
 
@@ -465,6 +556,36 @@ async def slash_command(interaction: discord.Interaction):
 
         # Envoyer le message embed au canal
         await interaction.channel.send(embed=embed)
+
+
+
+
+
+@bot.tree.command(name="retardataires",description="PING LES NULS")
+async def slash_command(interaction: discord.Interaction):
+ 
+    # Récupérer tous les noms des membres du serveur
+    member_names = [member.name for member in interaction.guild.members]
+    membersToPing = find_late_guys()
+
+    pinged_members = []
+    not_found_members = []
+
+    for memberToPing in membersToPing:
+        closest_name = find_closest_match_0_8(memberToPing, member_names)
+        user = discord.utils.find(lambda m: m.name.startswith(closest_name), interaction.guild.members)
+        
+        if user:
+            pinged_members.append(f"{memberToPing} alias {user.mention} il semblerait que tu sois en retard <3 \n")
+        else:
+            not_found_members.append(memberToPing)
+
+    if pinged_members:
+        await interaction.response.send_message(" ".join(pinged_members))
+
+    if not_found_members:
+        await interaction.response.send_message("Les utilisateurs suivants n'ont pas été trouvés: " + ", ".join(not_found_members))
+
 
 
 
