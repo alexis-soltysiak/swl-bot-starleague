@@ -471,18 +471,20 @@ def update_all_results():
         dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'sumKP'] += row["Kill Point Joueur Rouge (chiffre seulement)"]
         dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'sumPV'] += row["Points de Victoire Joueur Rouge (chiffre seulement)"]
 
+        
+        try : 
+          #LISTPLAYED PLAYED
+          if (len(dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'playerPlayed'].iloc[0]) != 0):
+              dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'playerPlayed'] += str("," + str(Jrouge))
+          else :
+              dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'playerPlayed'] += str(str(Jrouge))
 
-        #LISTPLAYED PLAYED
-        if (len(dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'playerPlayed'].iloc[0]) != 0):
-            dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'playerPlayed'] += str("," + str(Jrouge))
-        else :
-            dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'playerPlayed'] += str(str(Jrouge))
-
-        if (len(dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'playerPlayed'].iloc[0]) != 0):
-            dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'playerPlayed'] += str("," + str(Jbleu))
-        else :
-            dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'playerPlayed'] += str(str(Jbleu))
-
+          if (len(dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'playerPlayed'].iloc[0]) != 0):
+              dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'playerPlayed'] += str("," + str(Jbleu))
+          else :
+              dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'playerPlayed'] += str(str(Jbleu))
+        except : 
+          return False
 
         #NB matchs done
         dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'nbMatchPlayed'] += 1
@@ -894,7 +896,7 @@ def update_all_results():
     fig = calculationBid(dfFinalResults,ligue)
     figSavingAndShowing(ligue,saveName,fig)
     
-    return
+    return True
 
 
 

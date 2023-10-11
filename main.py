@@ -41,9 +41,10 @@ bot.remove_command('help')
 ligueList = ["Coruscant","Tatooine","Alderaan","Kessel"]
 pouleList = ["A","B","C","D"]
 
-adminUsers = [408722513711988747, 190863577391955969,107643272125513728]
+#107643272125513728
+adminUsers = [408722513711988747,190863577391955969]
 chanelResultat = [1004513653015449620, 1158499018960277675]
-chanelBot = [1158499018960277675]
+chanelBot = [1158499018960277675,1004637828342362133]
 
 
 def find_closest_match(input_str, choices):
@@ -188,9 +189,15 @@ async def slash_command(interaction: discord.Interaction):
     
     await interaction.response.defer()
  
-    update_all_results()
+    answer = update_all_results()
     
-    await interaction.followup.send(content="✅ Calcul fini!")
+    if answer == True:
+        await interaction.followup.send(content="✅ Calcul fini!")
+    else :            
+        await interaction.followup.send(content="❌ Erreur Update")
+
+    
+    
 
 
 
@@ -202,7 +209,7 @@ async def on_message(message):
     if message.channel.id in chanelResultat : 
         lines = message.content.split("\n")
         
-        if len(lines) == 11:
+        if len(lines) == 12:
             
             actualTime = datetime.now()
             mail = "martinpourrat@hotmail.com"
@@ -352,8 +359,34 @@ async def on_message(message):
                 "Condition": conditions
             }
 
+          
+         
+            # Colonnes à vérifier
+            cols_to_check = [
+                "Joueur Bleu", 
+                "Joueur Rouge", 
+                "Vainqueur", 
+                "Points de Victoire Joueur Bleu (chiffre seulement)", 
+                "Points de Victoire Joueur Rouge (chiffre seulement)"
+            ]
+
+                          
+                # Convertir nouvelle_ligne en Series
+            new_series = pd.Series(nouvelle_ligne, index=df.columns)
             try : 
-                df.loc[len(df)] = nouvelle_ligne
+                
+
+                # Vérifier si la ligne existe déjà
+                exists = (df[cols_to_check] == new_series[cols_to_check]).all(axis=1).any()
+
+                # Si elle n'existe pas, ajouter la ligne
+                if not exists:
+                    df.loc[len(df)] = nouvelle_ligne
+                else : 
+                    await message.channel.send("❌ Erreur : duplication de ligne") 
+                    return
+
+                
             except : 
                 await message.channel.send("❌ Erreur : csv , nouvelle ligne mal enregistrée") 
                 return
@@ -368,9 +401,13 @@ async def on_message(message):
             
             await message.channel.send("Update du classement et des graphs...")
 
-            update_all_results()
+            answer = update_all_results()
             
-            await message.channel.send("✅ Update finie !")
+            if answer == True:
+                await message.channel.send("✅ Update finie !")
+            else :            
+                await message.channel.send("❌ Erreur Update ")
+
 
 
     await bot.process_commands(message)
