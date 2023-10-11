@@ -448,14 +448,17 @@ async def slash_command(interaction: discord.Interaction):
         
         embed.description = f'WR Blue/red for {file}'
 
+        
         # Supprimer le message avec l'image téléchargée pour ne pas encombrer le canal
         await uploaded_image.delete()
 
+        message = await interaction.channel.send(embed=embed)
+                                                 
         # Ajouter le message à la liste des messages à supprimer
         messages_to_delete.append(message)
 
     # Attendre 60 secondes
-    await asyncio.sleep(60)
+    await asyncio.sleep(300)
 
     # Supprimer tous les messages
     for message in messages_to_delete:
@@ -474,6 +477,7 @@ async def slash_command(interaction: discord.Interaction):
     
     filesListe = ["Total", "Coruscant", "Tatooine", "Alderaan", "Kessel"]
 
+    messages_to_delete = []
     # Répondre initialement à l'interaction
     await interaction.response.send_message("Uploading graphs...", ephemeral=True)
 
@@ -497,8 +501,17 @@ async def slash_command(interaction: discord.Interaction):
         # Supprimer le message avec l'image téléchargée pour ne pas encombrer le canal
         await uploaded_image.delete()
 
-        # Envoyer le message embed au canal
-        await interaction.channel.send(embed=embed)
+        message = await interaction.channel.send(embed=embed)
+                                                 
+        # Ajouter le message à la liste des messages à supprimer
+        messages_to_delete.append(message)
+
+    # Attendre 60 secondes
+    await asyncio.sleep(300)
+
+    # Supprimer tous les messages
+    for message in messages_to_delete:
+        await message.delete()
 
 
 @bot.tree.command(name="deploiement",description="Get the list of deploiement")
@@ -512,7 +525,7 @@ async def slash_command(interaction: discord.Interaction):
         return
     
     filesListe = ["Total", "Coruscant", "Tatooine", "Alderaan", "Kessel"]
-
+    messages_to_delete = []
     # Répondre initialement à l'interaction
     await interaction.response.send_message("Uploading graphs...", ephemeral=True)
 
@@ -536,8 +549,17 @@ async def slash_command(interaction: discord.Interaction):
         # Supprimer le message avec l'image téléchargée pour ne pas encombrer le canal
         await uploaded_image.delete()
 
-        # Envoyer le message embed au canal
-        await interaction.channel.send(embed=embed)
+        message = await interaction.channel.send(embed=embed)
+                                                 
+        # Ajouter le message à la liste des messages à supprimer
+        messages_to_delete.append(message)
+
+    # Attendre 60 secondes
+    await asyncio.sleep(300)
+
+    # Supprimer tous les messages
+    for message in messages_to_delete:
+        await message.delete()
 
 
 @bot.tree.command(name="condition",description="Get the list of condition")
@@ -551,7 +573,7 @@ async def slash_command(interaction: discord.Interaction):
         return
     
     filesListe = ["Total", "Coruscant", "Tatooine", "Alderaan", "Kessel"]
-
+    messages_to_delete = []
     # Répondre initialement à l'interaction
     await interaction.response.send_message("Uploading graphs...", ephemeral=True)
 
@@ -575,8 +597,17 @@ async def slash_command(interaction: discord.Interaction):
         # Supprimer le message avec l'image téléchargée pour ne pas encombrer le canal
         await uploaded_image.delete()
 
-        # Envoyer le message embed au canal
-        await interaction.channel.send(embed=embed)
+        message = await interaction.channel.send(embed=embed)
+                                                 
+        # Ajouter le message à la liste des messages à supprimer
+        messages_to_delete.append(message)
+
+    # Attendre 60 secondes
+    await asyncio.sleep(300)
+
+    # Supprimer tous les messages
+    for message in messages_to_delete:
+        await message.delete()
 
 
 
@@ -591,7 +622,7 @@ async def slash_command(interaction: discord.Interaction):
         return
     
     filesListe = ["Total", "Coruscant", "Tatooine", "Alderaan", "Kessel"]
-
+    messages_to_delete = []
     # Répondre initialement à l'interaction
     await interaction.response.send_message("Uploading graphs...", ephemeral=True)
 
@@ -615,8 +646,17 @@ async def slash_command(interaction: discord.Interaction):
         # Supprimer le message avec l'image téléchargée pour ne pas encombrer le canal
         await uploaded_image.delete()
 
-        # Envoyer le message embed au canal
-        await interaction.channel.send(embed=embed)
+        message = await interaction.channel.send(embed=embed)
+                                                 
+        # Ajouter le message à la liste des messages à supprimer
+        messages_to_delete.append(message)
+
+    # Attendre 60 secondes
+    await asyncio.sleep(300)
+
+    # Supprimer tous les messages
+    for message in messages_to_delete:
+        await message.delete()
 
 
 
