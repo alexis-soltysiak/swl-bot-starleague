@@ -12,7 +12,7 @@ import re
 from dotenv import load_dotenv
 import difflib
 from discord import SelectMenu, SelectOption, Interaction
-from discord.ext import commands, menus
+from discord.ext import commands
 from discord import Embed, Color
 import sentences as st
 import random
@@ -417,6 +417,8 @@ async def on_message(message):
 @bot.tree.command(name="wr",description="get the wr diagram")
 async def slash_command(interaction: discord.Interaction):
     
+    messages_to_delete = []  # Liste pour stocker les messages à supprimer
+
     # Vérifiez si la commande est exécutée dans le canal autorisé
     if interaction.channel_id not in chanelBot:
         lostCanal = random.choice(st.sentenceLostCanal)
@@ -449,13 +451,16 @@ async def slash_command(interaction: discord.Interaction):
         # Supprimer le message avec l'image téléchargée pour ne pas encombrer le canal
         await uploaded_image.delete()
 
-        # Envoyer le message embed au canal
-        message = await interaction.channel.send(embed=embed)  
-        await asyncio.sleep(60)
+        # Ajouter le message à la liste des messages à supprimer
+        messages_to_delete.append(message)
 
-        # Supprimer le message
+    # Attendre 60 secondes
+    await asyncio.sleep(60)
+
+    # Supprimer tous les messages
+    for message in messages_to_delete:
         await message.delete()
-        
+            
 
 @bot.tree.command(name="objective",description="Get the list of objective")
 async def slash_command(interaction: discord.Interaction):
