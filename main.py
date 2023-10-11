@@ -14,6 +14,10 @@ import difflib
 from discord import SelectMenu, SelectOption, Interaction
 from discord.ext import commands, menus
 from discord import Embed, Color
+import sentences as st
+import random
+import asyncio
+
 
 from functions import update_all_results, find_late_guys
 
@@ -37,6 +41,11 @@ bot.remove_command('help')
 ligueList = ["Coruscant","Tatooine","Alderaan","Kessel"]
 pouleList = ["A","B","C","D"]
 
+adminUsers = [408722513711988747, 190863577391955969,107643272125513728]
+chanelResultat = [1004513653015449620, 1158499018960277675]
+chanelBot = [1158499018960277675]
+
+
 def find_closest_match(input_str, choices):
     matches = difflib.get_close_matches(input_str, choices, n=1,cutoff=0.3)  # n=1 signifie que nous voulons seulement la meilleure correspondance
     if matches:
@@ -59,14 +68,32 @@ async def on_ready():
     
 @bot.event
 async def on_command_error(ctx, error):
-    # Vous pouvez ajouter d'autres logiques ici pour gérer différents types d'erreurs
-    # Mais pour l'instant, nous allons simplement envoyer l'embed d'aide.
-    if isinstance(error, commands.CommandNotFound):  # Si la commande n'est pas trouvée
+    
+    
+    if ctx.channel.id not in chanelBot:
+        lostCanal = random.choice(st.sentenceLostCanal)
+        await ctx.send(lostCanal, ephemeral=True)
+        await asyncio.sleep(3)
+        return
+    
+    
+    lost_msg = random.choice(st.sentenceLost)
+    await ctx.send(lost_msg)
+    await asyncio.sleep(3)
+    
+    if isinstance(error, commands.CommandNotFound): 
         await help(ctx)
         
         
 @bot.command()
 async def help(ctx):
+    
+    if ctx.channel.id not in chanelBot:
+        lostCanal = random.choice(st.sentenceLostCanal)
+        await ctx.send(lostCanal, ephemeral=True)
+        await asyncio.sleep(3)
+        return
+    
     embed = Embed(title="Besoin d'aide ?")
     embed.add_field(name="\u2001", value="\n", inline=False)
     embed.add_field(name="\u2001", value="\n", inline=False)
@@ -82,7 +109,7 @@ async def help(ctx):
     embed.add_field(name="**📜\u2001\u2001/liste [@joueur]**", value="Permet d'afficher le lien de la liste du joueur", inline=False)
     embed.add_field(name="\u2001", value="\n", inline=False)
 
-    embed.add_field(name="**☎️\u2001\u2001/retardataires **", value="Permet de ping les joueurs avec le moins de match", inline=False)
+    embed.add_field(name="**☎️\u2001\u2001/retardataires **", value="(ADMIN ONLY) Permet de ping les joueurs avec le moins de match", inline=False)
     embed.add_field(name="\u2001", value="\n", inline=False)
 
     embed.add_field(name="**📊\u2001\u2001/wr**", value="Affiche les graphiques des win rate Joueur Bleu / Joueur rouge", inline=False)
@@ -99,13 +126,27 @@ async def help(ctx):
     embed.add_field(name="**📊\u2001\u2001/condition**", value="Affiche les graphiques de la répartition des conditions", inline=False)
     embed.add_field(name="\u2001", value="\n", inline=False)
     
-    🔄
+        
+    embed.add_field(name="**🔄\u2001\u2001/calcul**", value="(ADMIN ONLY) Force to calculate the results", inline=False)
+    embed.add_field(name="\u2001", value="\n", inline=False)
+    
     await ctx.send(embed=embed)
   
 
     
 @bot.tree.command(name="liste", description="afficher la liste d'un joueur")
 async def slash_command(interaction: discord.Interaction, user: discord.User):
+    
+    # Vérifiez si la commande est exécutée dans le canal autorisé
+    if interaction.channel_id not in chanelBot:
+        lostCanal = random.choice(st.sentenceLostCanal)
+        await interaction.response.send_message(lostCanal, ephemeral=True)
+        await asyncio.sleep(3)        
+        return
+    
+    spyMessage = random.choice(st.sentenceSpy)
+    await interaction.response.send_message(spyMessage, ephemeral=True)
+    await asyncio.sleep(3)
 
     # Chargez le CSV dans un DataFrame
     df = pd.read_csv("bdd/users.csv")
@@ -129,52 +170,36 @@ async def slash_command(interaction: discord.Interaction, user: discord.User):
     
 @bot.tree.command(name="calcul", description="calcul csv")
 async def slash_command(interaction: discord.Interaction):
+
+    
+    # Vérifiez si l'utilisateur est autorisé
+    if interaction.user.id not in adminUsers:
+        messageAdmin = random.choice(st.sentenceAdmin)
+        await interaction.response.send_message(messageAdmin, ephemeral=True)
+        await asyncio.sleep(3)        
+        return
+    
+    # Vérifiez si la commande est exécutée dans le canal autorisé
+    if interaction.channel_id not in chanelBot:
+        lostCanal = random.choice(st.sentenceLostCanal)
+        await interaction.response.send_message(lostCanal, ephemeral=True)
+        await asyncio.sleep(3)        
+        return
     
     await interaction.response.defer()
-    
-    #waitingMessage = await interaction.channel.send("Chargement en cours...")
-
-    # Exécutez la fonction qui prend du temps
+ 
     update_all_results()
-
-    #await waitingMessage.delete()
     
-    await interaction.followup.send(content="✅ calcul fini!")
+    await interaction.followup.send(content="✅ Calcul fini!")
 
 
-"""
-
-class Match(discord.ui.Select):
-    def __init__(self):
-        options=[
-            discord.SelectOption(label="Option 1",emoji="👌",description="This is option 1!"),
-            discord.SelectOption(label="Option 2",emoji="✨",description="This is option 2!"),
-            discord.SelectOption(label="Option 3",emoji="🎭",description="This is option 3!")
-            ]
-        super().__init__(placeholder="Select an option",max_values=1,min_values=1,options=options)
-        
-    async def callback(self, interaction: Interaction) :
-        await interaction.response.send_message(f"you chose `{self.values[0]}`")
-
-        
-class matchView(discord.ui.View):
-    def __init__(self):
-        super().__init__()
-        self.add_item(Match())
-
-@bot.command()
-async def match(ctx:commands.Context):
-    await ctx.send("Test",view = matchView())
-
-"""
-
-    
 
 
 @bot.event
 async def on_message(message):
     
-    if message.channel.id == 1158499018960277675:  # Remplacez XXXXXXXXXXXXX par l'ID de votre canal
+    
+    if message.channel.id in chanelResultat : 
         lines = message.content.split("\n")
         
         if len(lines) == 11:
@@ -267,8 +292,7 @@ async def on_message(message):
                         joueurRouge = f"{member.name}#{member.discriminator}"
                     else:
                         joueurRouge = "None"
-                        
-                    print("eeee")
+           
                 else : 
                     await message.channel.send("❌ Erreur : Joueur Rouge mal enregistré ")
                     return
@@ -304,21 +328,7 @@ async def on_message(message):
                 scoreBleu = min(score_1, score_2)
                 scoreRouge = max(score_1, score_2)
               
-            """  
-            print(f"league Name :  {leagueName}")
-            print(f"Poule: {poule}")
-            print(f"Joueur Bleu: {joueurBleu}")
-            print(f"Joueur Rouge: {joueurRouge}")
-            print(f"Winner: {winner}")
-            print(f"Score Bleu: {scoreBleu}")
-            print(f"Score Rouge: {scoreRouge}")
-            print(f"Mission: {mission}")
-            print(f"Deploiement: {deploiement}")
-            print(f"Conditions: {conditions}")
-            print(f"KP Bleu: {kpBleu}")
-            print(f"KP Rouge: {kpRouge}")
-            """ 
-            
+           
             try : 
                 df = pd.read_csv('bdd/match.csv')
             except : 
@@ -355,6 +365,12 @@ async def on_message(message):
                 return
             
             await message.channel.send("✅ Match bien enrigstré ")
+            
+            await message.channel.send("Update du classement et des graphs...")
+
+            update_all_results()
+            
+            await message.channel.send("✅ Update finie !")
 
 
     await bot.process_commands(message)
@@ -363,6 +379,13 @@ async def on_message(message):
 
 @bot.tree.command(name="wr",description="get the wr diagram")
 async def slash_command(interaction: discord.Interaction):
+    
+    # Vérifiez si la commande est exécutée dans le canal autorisé
+    if interaction.channel_id not in chanelBot:
+        lostCanal = random.choice(st.sentenceLostCanal)
+        await interaction.response.send_message(lostCanal, ephemeral=True)
+        await asyncio.sleep(3)        
+        return
     
     filesListe = ["Total", "Coruscant", "Tatooine", "Alderaan", "Kessel"]
 
@@ -396,6 +419,13 @@ async def slash_command(interaction: discord.Interaction):
 @bot.tree.command(name="objective",description="Get the list of objective")
 async def slash_command(interaction: discord.Interaction):
     
+    # Vérifiez si la commande est exécutée dans le canal autorisé
+    if interaction.channel_id not in chanelBot:
+        lostCanal = random.choice(st.sentenceLostCanal)
+        await interaction.response.send_message(lostCanal, ephemeral=True)
+        await asyncio.sleep(3)        
+        return
+    
     filesListe = ["Total", "Coruscant", "Tatooine", "Alderaan", "Kessel"]
 
     # Répondre initialement à l'interaction
@@ -427,6 +457,13 @@ async def slash_command(interaction: discord.Interaction):
 
 @bot.tree.command(name="deploiement",description="Get the list of deploiement")
 async def slash_command(interaction: discord.Interaction):
+    
+    # Vérifiez si la commande est exécutée dans le canal autorisé
+    if interaction.channel_id not in chanelBot:
+        lostCanal = random.choice(st.sentenceLostCanal)
+        await interaction.response.send_message(lostCanal, ephemeral=True)
+        await asyncio.sleep(3)        
+        return
     
     filesListe = ["Total", "Coruscant", "Tatooine", "Alderaan", "Kessel"]
 
@@ -460,6 +497,13 @@ async def slash_command(interaction: discord.Interaction):
 @bot.tree.command(name="condition",description="Get the list of condition")
 async def slash_command(interaction: discord.Interaction):
     
+    # Vérifiez si la commande est exécutée dans le canal autorisé
+    if interaction.channel_id not in chanelBot:
+        lostCanal = random.choice(st.sentenceLostCanal)
+        await interaction.response.send_message(lostCanal, ephemeral=True)
+        await asyncio.sleep(3)        
+        return
+    
     filesListe = ["Total", "Coruscant", "Tatooine", "Alderaan", "Kessel"]
 
     # Répondre initialement à l'interaction
@@ -489,45 +533,16 @@ async def slash_command(interaction: discord.Interaction):
         await interaction.channel.send(embed=embed)
 
 
-"""
-
-@bot.tree.command(name="factionformat",description="Get the list of condition")
-async def slash_command(interaction: discord.Interaction):
-    
-    filesListe = ["Total", "Coruscant", "Tatooine", "Alderaan", "Kessel"]
-
-    # Répondre initialement à l'interaction
-    await interaction.response.send_message("Uploading graphs...", ephemeral=True)
-
-    for file in filesListe:
-        # Construire le chemin du fichier à partir de la liste
-        file_path = f'Results/{file}/FactionFormat.png'
-
-        # Télécharger l'image sur Discord
-        with open(file_path, 'rb') as f:
-            uploaded_image = await interaction.channel.send(file=discord.File(f))
-            image_url = uploaded_image.attachments[0].url
-
-        # Créer un embed pour l'image
-        embed = discord.Embed(title=f"FactionFormat rate for {file}")
-
-        # Utiliser l'URL de l'image téléchargée pour l'embed
-        embed.set_image(url=image_url)
-        
-        embed.description = f'FactionFormat Blue/red for {file}'
-
-        # Supprimer le message avec l'image téléchargée pour ne pas encombrer le canal
-        await uploaded_image.delete()
-
-        # Envoyer le message embed au canal
-        await interaction.channel.send(embed=embed)
-
-
-"""
-
 
 @bot.tree.command(name="bid",description="Get the list of bid")
 async def slash_command(interaction: discord.Interaction):
+    
+    # Vérifiez si la commande est exécutée dans le canal autorisé
+    if interaction.channel_id not in chanelBot:
+        lostCanal = random.choice(st.sentenceLostCanal)
+        await interaction.response.send_message(lostCanal, ephemeral=True)
+        await asyncio.sleep(3)        
+        return
     
     filesListe = ["Total", "Coruscant", "Tatooine", "Alderaan", "Kessel"]
 
@@ -563,6 +578,20 @@ async def slash_command(interaction: discord.Interaction):
 
 @bot.tree.command(name="retardataires",description="PING LES NULS")
 async def slash_command(interaction: discord.Interaction):
+     
+    # Vérifiez si l'utilisateur est autorisé
+    if interaction.user.id not in adminUsers:
+        messageAdmin = random.choice(st.sentenceAdmin)
+        await interaction.response.send_message(messageAdmin, ephemeral=True)
+        await asyncio.sleep(3)        
+        return
+    
+    # Vérifiez si la commande est exécutée dans le canal autorisé
+    if interaction.channel_id not in chanelBot:
+        lostCanal = random.choice(st.sentenceLostCanal)
+        await interaction.response.send_message(lostCanal, ephemeral=True)
+        await asyncio.sleep(3)        
+        return
  
     # Récupérer tous les noms des membres du serveur
     member_names = [member.name for member in interaction.guild.members]
@@ -591,6 +620,13 @@ async def slash_command(interaction: discord.Interaction):
 
 @bot.tree.command(name="classement", description="afficher le classement")
 async def slash_command(interaction: discord.Interaction,ligue: str, poule_name:str = None):
+    
+    # Vérifiez si la commande est exécutée dans le canal autorisé
+    if interaction.channel_id not in chanelBot:
+        lostCanal = random.choice(st.sentenceLostCanal)
+        await interaction.response.send_message(lostCanal, ephemeral=True)
+        await asyncio.sleep(3)        
+        return
     
     lienClassement = "bdd/classement.csv"
    
@@ -678,13 +714,7 @@ async def slash_command(interaction: discord.Interaction,ligue: str, poule_name:
     await interaction.response.send_message(embed=embed)
     return
 
-     
-
-@bot.command()
-async def av(ctx,member: discord.Member):
-    await ctx.send(member.display_avatar)
-
-
+    
 
 
 bot.run(token)
