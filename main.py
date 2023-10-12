@@ -79,7 +79,7 @@ async def on_command_error(ctx, error):
     
     
     lost_msg = random.choice(st.sentenceLost)
-    await ctx.send(lost_msg)
+    await ctx.send(lost_msg,ephemeral=True)
     await asyncio.sleep(3)
     
     if isinstance(error, commands.CommandNotFound): 
@@ -145,7 +145,7 @@ async def slash_command(interaction: discord.Interaction, user: discord.User):
     
     spyMessage = random.choice(st.sentenceSpy)
     await interaction.response.send_message(spyMessage, ephemeral=False)  # Envoi du message d'espionnage comme réponse initiale et éphémère
-    await asyncio.sleep(2)
+    await asyncio.sleep(3)
 
     # Chargez le CSV dans un DataFrame
     df = pd.read_csv("bdd/users.csv")
@@ -205,6 +205,10 @@ async def on_message(message):
         
         if len(lines) == 10:
             
+            missionList = ["Sabotage des Vaporisateurs Hydroponiques","Positions-Clés","Interception des Transmissions","Récupération de Ravitaillements","Echange d'Otages","Plasticage","Charges Explosives","Percée"]        
+            deploiementList = ["Offensive Majeure","Positions Avancées","Véhicules Eclaireurs","La Longue Marche","Acculés","Lignes de Bataille","Confusion","Danger Proche"]
+            conditionsList = ["Conditions Favorables","Largage de Ravitaillement","Environnement Hostile","Positions Fortifiées","Champs de Mines","Visibilité Limitée","Epuisés par la Guerre"]
+            
             actualTime = datetime.now()
             mail = "martinpourrat@hotmail.com"
             try : 
@@ -227,18 +231,22 @@ async def on_message(message):
             """
             try : 
                 mission = lines[5].strip()
+                mission = find_closest_match(mission,missionList)
+                
             except : 
                 await message.channel.send("❌ Erreur : mission mal enregistrée ")
                 return
             
             try : 
                 deploiement = lines[6].strip()
+                deploiement = find_closest_match(deploiement,deploiementList)
             except : 
                 await message.channel.send("❌ Erreur : deploiement mal enregistré ")
                 return
             
             try : 
                 conditions = lines[7].strip()
+                conditions = find_closest_match(conditions,conditionsList)
             except : 
                 await message.channel.send("❌ Erreur : condition mal enregistré ")
                 return
@@ -272,20 +280,13 @@ async def on_message(message):
                 if match:
                     member_id = int(match.group(1))
                     member = await message.guild.fetch_member(member_id)
-                    
-                    #user = f"{user.name}"
-                    #user = find_closest_match(user, df["Pseudo Discord"].tolist())
-
-                    
-                    print(member_id,member)
-                    
             
                     if member:
-                        joueurBleu = f"{member.name}#{member.discriminator}"  # Format : "username#discriminator"
+                        #joueurBleu = f"{member.name}#{member.discriminator}"  # Format : "username#discriminator"
+                        joueurBleu = str(member.name)
                     else:
                         joueurBleu = "None"
                         
-                    print(joueurBleu)
                 else: 
                     await message.channel.send("❌ Erreur : Joueur Bleu mal enregistré ")
                     return
@@ -302,7 +303,8 @@ async def on_message(message):
                     member = await message.guild.fetch_member(member_id)
                     
                     if member:
-                        joueurRouge = f"{member.name}#{member.discriminator}"
+                        joueurRouge = str(member.name)
+                        #joueurRouge = f"{member.name}#{member.discriminator}"
                     else:
                         joueurRouge = "None"
            
@@ -322,7 +324,8 @@ async def on_message(message):
                     member = await message.guild.fetch_member(member_id)
                     
                     if member:
-                        winner = f"{member.name}#{member.discriminator}"
+                        winner = str(member.name)
+                        #winner = f"{member.name}#{member.discriminator}"
                     else:
                         winner = "None"
                 else : 
@@ -381,7 +384,19 @@ async def on_message(message):
             new_series = pd.Series(nouvelle_ligne, index=df.columns)
             try : 
                 
+                last_row_series = df.iloc[-1]
+                for col in cols_to_check:
+                    last_value = last_row_series[col]
+                    new_value = new_series[col]
+                    
+                    if last_value != new_value:
+                        print(f"Différence détectée pour la colonne {col}:")
+                        print(f"\tValeur dans la dernière ligne: {last_value} (Type: {type(last_value)}, Taille: {len(str(last_value))})")
+                        print(f"\tValeur dans new_series: {new_value} (Type: {type(new_value)}, Taille: {len(str(new_value))})")
+                    else:
+                        print(f"Pas de différence pour la colonne {col}")
 
+    
                 # Vérifier si la ligne existe déjà
                 exists = (df[cols_to_check] == new_series[cols_to_check]).all(axis=1).any()
 
