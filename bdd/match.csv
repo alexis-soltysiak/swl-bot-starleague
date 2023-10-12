@@ -2,7 +2,7 @@ Horodateur,Adresse e-mail,Phase,Joueur Bleu,Joueur Rouge,Vainqueur,Points de Vic
 30/09/2023 01:00:55,martinpourrat@hotmail.com,Poule,valeformortis,douggybag,Joueur Bleu,2,1,194,296,Positions-Clés,La Longue Marche,Environnement Hostile
 30/09/2023 01:04:21,martinpourrat@hotmail.com,Poule,ju_starwars,weedartwork,Joueur Rouge,0,3,112,195,Charges Explosives,Offensive Majeure,Positions Fortifiées
 30/09/2023 01:06:43,martinpourrat@hotmail.com,Poule,unholy68,sultain4827,Joueur Bleu,2,1,562,0,Positions-Clés,Offensive Majeure,Champ de Mines
-30/09/2023 01:09:49,martinpourrat@hotmail.com,Poule,inossatam,david27930#0697,Joueur Bleu,4,3,152,373,Sabotage des Vaporisateurs Hydroponiques,Positions Avancées,Largage de Ravitaillement
+30/09/2023 01:09:49,martinpourrat@hotmail.com,Poule,inossatam,david27930,Joueur Bleu,4,3,152,373,Sabotage des Vaporisateurs Hydroponiques,Positions Avancées,Largage de Ravitaillement
 30/09/2023 01:13:39,martinpourrat@hotmail.com,Poule,maroucho,sultain4827,Joueur Bleu,5,1,700,200,Interception des Transmissions,Lignes de Bataille,Conditions Favorables
 30/09/2023 01:33:33,martinpourrat@hotmail.com,Poule,uerki.,weedartwork,Joueur Rouge,2,3,526,213,Récupération de Ravitaillements,Offensive Majeure,Positions Fortifiées
 30/09/2023 01:35:57,martinpourrat@hotmail.com,Poule,fringe,nash_2715,Joueur Bleu,4,2,320,195,Sabotage des Vaporisateurs Hydroponiques,Véhicules Éclaireurs,Environnement Hostile
@@ -18,14 +18,14 @@ Horodateur,Adresse e-mail,Phase,Joueur Bleu,Joueur Rouge,Vainqueur,Points de Vic
 30/09/2023 02:05:37,martinpourrat@hotmail.com,Poule,valeformortis,martin6197,Joueur Bleu,2,0,700,193,Plasticage,La Longue Marche,Conditions Favorables
 30/09/2023 02:07:35,martinpourrat@hotmail.com,Poule,_kaiko_,pask7707,Joueur Bleu,3,0,795,0,Échange d'Otages,Véhicules Éclaireurs,Largage de Ravitaillement
 30/09/2023 18:43:55,martinpourrat@hotmail.com,Poule,olan1,aryhas,Joueur Rouge,3,7,213,799,Interception des Transmissions,Positions Avancées,Largage de Ravitaillement
-30/09/2023 18:58:46,martinpourrat@hotmail.com,Poule,bapjeri,Khamal#5554,Joueur Bleu,10,0,800,334,Interception des Transmissions,Danger Proche,Visibilité Limitée
+30/09/2023 18:58:46,martinpourrat@hotmail.com,Poule,bapjeri,Khamal,Joueur Bleu,10,0,800,334,Interception des Transmissions,Danger Proche,Visibilité Limitée
 30/09/2023 19:01:19,martinpourrat@hotmail.com,Poule,beliandir,saayanel,Joueur Bleu,3,2,313,415,Récupération de Ravitaillements,Positions Avancées,Largage de Ravitaillement
 30/09/2023 19:04:47,martinpourrat@hotmail.com,Poule,maroucho,neffyl,Joueur Rouge,3,8,0,262,Interception des Transmissions,Positions Avancées,Largage de Ravitaillement
 30/09/2023 19:17:56,martinpourrat@hotmail.com,Poule,zam2031,fringe,Joueur Bleu,7,3,513,361,Interception des Transmissions,Acculés,Conditions Favorables
 30/09/2023 19:24:27,martinpourrat@hotmail.com,Poule,razperfidou,totolasticot,Joueur Bleu,2,1,429,283,Récupération de Ravitaillements,Positions Avancées,Conditions Favorables
 30/09/2023 19:26:28,martinpourrat@hotmail.com,Poule,ealthril,arcn7,Joueur Bleu,3,0,495,178,Positions-Clés,Offensive Majeure,Champ de Mines
 30/09/2023 20:18:43,martinpourrat@hotmail.com,Poule,olan1,chub__,Joueur Rouge,1,2,251,707,Positions-Clés,Positions Avancées,Épuisés par la Guerre
-30/09/2023 20:20:45,martinpourrat@hotmail.com,Poule,bapjeri,david27930#0697,Joueur Bleu,5,0,800,212,Récupération de Ravitaillements,Confusion,Environnement Hostile
+30/09/2023 20:20:45,martinpourrat@hotmail.com,Poule,bapjeri,david27930,Joueur Bleu,5,0,800,212,Récupération de Ravitaillements,Confusion,Environnement Hostile
 30/09/2023 20:22:00,martinpourrat@hotmail.com,Poule,razperfidou,nostrus1537,Joueur Rouge,4,4,115,700,Sabotage des Vaporisateurs Hydroponiques,Offensive Majeure,Conditions Favorables
 30/09/2023 20:23:34,martinpourrat@hotmail.com,Poule,capitainebanane,raphanduril,Joueur Rouge,4,4,462,622,Sabotage des Vaporisateurs Hydroponiques,Véhicules Éclaireurs,Conditions Favorables
 30/09/2023 20:25:39,martinpourrat@hotmail.com,Poule,douggybag,enguerrandleconquerant,Joueur Rouge,6,8,203,320,Percée,Offensive Majeure,Positions Fortifiées
@@ -38,3 +38,16 @@ Horodateur,Adresse e-mail,Phase,Joueur Bleu,Joueur Rouge,Vainqueur,Points de Vic
 2023-10-12 01:51:18.620940,martinpourrat@hotmail.com,Poule,mamatt76,ju_starwars,Joueur Bleu,1,1,474,272,Charges Explosives,Véhicules Eclaireurs,Positions Fortifiées
 2023-10-12 08:10:03.059175,martinpourrat@hotmail.com,Poule,inossatam,bapjeri,Joueur Rouge,5,7,514,672,Interception des Transmissions,Offensive Majeure,Conditions Favorables
 2023-10-12 08:13:18.522030,martinpourrat@hotmail.com,Poule,raphanduril,vuarapuung,Joueur Bleu,3,2,660,171,Récupération de Ravitaillements,Véhicules Eclaireurs,Largage de Ravitaillement
+2023-10-12 10:31:55.523413,martinpourrat@hotmail.com,Poule,saayanel,breuerois,Joueur Bleu,2,2,385,313,Récupération de Ravitaillements,Danger Proche,Epuisés par la Guerre
+2023-10-12 10:34:27.452542,martinpourrat@hotmail.com,Poule,martin6197,enguerrandleconquerant,Joueur Rouge,0,2,250,785,Charges Explosives,Positions Avancées,Environnement Hostile
+2023-10-12 10:38:58.566620,martinpourrat@hotmail.com,Poule,ellitank,_kaiko_,Joueur Rouge,4,4,178,340,Sabotage des Vaporisateurs Hydroponiques,Offensive Majeure,Epuisés par la Guerre
+2023-10-12 10:42:00.709962,martinpourrat@hotmail.com,Poule,vlad_official,Romainswl,Joueur Rouge,2,6,52,700,Sabotage des Vaporisateurs Hydroponiques,Confusion,Largage de Ravitaillement
+2023-10-12 10:54:48.686298,martinpourrat@hotmail.com,Poule,draque,saayanel,Joueur Bleu,3,2,0,355,Récupération de Ravitaillements,Positions Avancées,Positions Fortifiées
+2023-10-12 10:57:09.567618,martinpourrat@hotmail.com,Poule,karoubo,vasperead,Joueur Rouge,0,0,0,700,Positions-Clés,Positions Avancées,Largage de Ravitaillement
+2023-10-12 13:29:26.446544,martinpourrat@hotmail.com,Poule,draque,beliandir,Joueur Bleu,1,1,454,281,Charges Explosives,Positions Avancées,Positions Fortifiées
+2023-10-12 14:35:37.911638,martinpourrat@hotmail.com,Poule,unholy68,maroucho,Joueur Bleu,4,4,326,0,Sabotage des Vaporisateurs Hydroponiques,Positions Avancées,Positions Fortifiées
+2023-10-12 14:38:16.032913,martinpourrat@hotmail.com,Poule,capitainebanane,_kintara,Joueur Rouge,0,2,0,782,Charges Explosives,Acculés,Environnement Hostile
+2023-10-12 14:47:21.486943,martinpourrat@hotmail.com,Poule,moonglum77,ellitank,Joueur Rouge,2,3,245,658,Récupération de Ravitaillements,La Longue Marche,Environnement Hostile
+2023-10-12 14:50:34.883088,martinpourrat@hotmail.com,Poule,allumette,Safsouf,Joueur Rouge,0,2,0,792,Charges Explosives,Danger Proche,Largage de Ravitaillement
+2023-10-12 14:53:15.479455,martinpourrat@hotmail.com,Poule,breuerois,beliandir,Joueur Rouge,1,6,285,446,Interception des Transmissions,La Longue Marche,Largage de Ravitaillement
+2023-10-12 14:55:33.815624,martinpourrat@hotmail.com,Poule,Romainswl,sultan93_,Joueur Bleu,1,0,258,572,Echange d'Otages,Offensive Majeure,Positions Fortifiées

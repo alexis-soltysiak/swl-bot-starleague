@@ -42,9 +42,9 @@ ligueList = ["Coruscant","Tatooine","Alderaan","Kessel"]
 pouleList = ["A","B","C","D"]
 
 #107643272125513728
-adminUsers = [408722513711988747,190863577391955969]
+adminUsers = [408722513711988747,190863577391955969,107643272125513728]
 chanelResultat = [1004513653015449620, 1158499018960277675]
-chanelBot = [1158499018960277675,1004637828342362133]
+chanelBot = [1004513446932512828,1158499018960277675,1161959267948044309]
 
 
 def find_closest_match(input_str, choices):
@@ -360,7 +360,7 @@ async def on_message(message):
                 "Phase": phase,
                 "Joueur Bleu": joueurBleu,
                 "Joueur Rouge": joueurRouge,
-                "Vainqueur": winner,
+                "Vainqueur": winnerName,
                 "Points de Victoire Joueur Bleu (chiffre seulement)": scoreBleu,
                 "Points de Victoire Joueur Rouge (chiffre seulement)": scoreRouge,
                 "Kill Point Joueur Bleu (chiffre seulement)": kpBleu,
@@ -408,7 +408,7 @@ async def on_message(message):
                 await message.channel.send("❌ Erreur : sauvegarde csv ") 
                 return
             
-            await message.channel.send("✅ Match bien enrigstré ")
+            await message.channel.send("✅ Match bien enregistré ")
             
             await message.channel.send("Update du classement et des graphs...")
 
@@ -697,20 +697,25 @@ async def slash_command(interaction: discord.Interaction):
     pinged_members = []
     not_found_members = []
 
-    for memberToPing in membersToPing:
-        closest_name = find_closest_match_0_8(memberToPing, member_names)
-        user = discord.utils.find(lambda m: m.name.startswith(closest_name), interaction.guild.members)
+    guild = interaction.guild
+    memberName = [member.name for member in guild.members]
+
+    print(memberName)
+
+    for memberId in membersToPing:
         
-        if user:
-            pinged_members.append(f"{memberToPing} alias {user.mention} il semblerait que tu sois en retard <3 \n")
+
+        if str(memberId) in memberName: 
+            id = discord.utils.get(guild.members,name =str(memberId))
+            pinged_members.append(f"{id.mention} il semblerait que tu sois en retard <3 \n")
         else:
-            not_found_members.append(memberToPing)
+            not_found_members.append(str(memberId))
 
     if pinged_members:
         await interaction.response.send_message(" ".join(pinged_members))
 
     if not_found_members:
-        await interaction.response.send_message("Les utilisateurs suivants n'ont pas été trouvés: " + ", ".join(not_found_members))
+        await interaction.followup.send("Les utilisateurs suivants n'ont pas été trouvés: " + ", ".join(not_found_members))
 
 
 

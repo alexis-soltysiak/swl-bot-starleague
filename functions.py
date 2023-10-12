@@ -484,6 +484,7 @@ def update_all_results():
           else :
               dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'playerPlayed'] += str(str(Jbleu))
         except : 
+          print(f"Error with  {Jbleu} et {Jrouge}")
           return False
 
         #NB matchs done
@@ -920,7 +921,8 @@ def find_late_guys():
       filtered_df = pd.concat([filtered_df, second_filtered_df])
 
   # Récupérer la liste des pseudos
-  pseudos = filtered_df['Pseudo'].tolist()
+  pseudos = filtered_df['Pseudo Discord'].tolist()
   
+
   return pseudos
   
