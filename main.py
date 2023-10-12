@@ -19,7 +19,7 @@ import random
 import asyncio
 
 
-from functions import update_all_results, find_late_guys
+from functions import update_all_results, find_late_guys, calculation_of_the_number_of_match
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -111,6 +111,9 @@ async def help(ctx):
     embed.add_field(name="\u2001", value="\n", inline=False)
 
     embed.add_field(name="**☎️\u2001\u2001/retardataires **", value="(ADMIN ONLY) Permet de ping les joueurs avec le moins de match", inline=False)
+    embed.add_field(name="\u2001", value="\n", inline=False)
+    
+    embed.add_field(name="**🛰️\u2001\u2001/statusmatch **", value="Permet de voir l'évolution du nombre de match par poule et ligue", inline=False)
     embed.add_field(name="\u2001", value="\n", inline=False)
 
     embed.add_field(name="**📊\u2001\u2001/wr**", value="Affiche les graphiques des win rate Joueur Bleu / Joueur rouge", inline=False)
@@ -422,6 +425,50 @@ async def on_message(message):
 
 
     await bot.process_commands(message)
+
+
+
+
+@bot.tree.command(name="statusmatch",description="retourne le statut des matchs")
+async def slash_command(interaction: discord.Interaction):
+    
+
+    # Vérifiez si la commande est exécutée dans le canal autorisé
+    if interaction.channel_id not in chanelBot:      
+        return
+
+
+    matchs = calculation_of_the_number_of_match()
+
+   # Création d'un embed pour afficher les informations
+    embed = discord.Embed(title="Progression du nombre de Matchs", color=0x03f8fc)  # Couleur bleu clair pour l'embed, modifiez à votre goût
+
+    # En-tête du tableau
+    header = "`Ligue      | Poule  | status`\n"
+    header += "-"*35 + "\n"  # Une ligne de séparation
+
+    # Construction des lignes du tableau
+    table_rows = []
+    for info in matchs:
+        # Pour assurer un alignement correct, nous utiliserons la méthode ljust pour donner un espace fixe à chaque colonne
+        ligue = info['Ligue'].ljust(10)
+        poule = info['Poule'].ljust(6)
+        
+        # Calculer la progression en matches joués/non joués
+        nb_played = int(info['nbMatchPlayed'])
+
+        nb_not_played = 6 - nb_played
+        progression = "▓" * nb_played + "░" * nb_not_played 
+
+        row = f"`{ligue} | {poule} | {progression}`"
+        table_rows.append(row)
+
+    # Assemblage de l'en-tête et des lignes pour former le tableau complet
+    table = header + '\n'.join(table_rows)
+    embed.description = table
+
+    await interaction.response.send_message(embed=embed)
+    
 
 
 

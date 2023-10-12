@@ -926,3 +926,28 @@ def find_late_guys():
 
   return pseudos
   
+  
+def calculation_of_the_number_of_match():
+  
+  # Lire le fichier CSV
+  df = pd.read_csv('bdd/classement.csv')
+ # Définir l'ordre des ligues
+  ligue_order = ['Coruscant', 'Alderaan', 'Tatooine', 'Kessel']
+
+  # Transformer la colonne 'Ligue' en une catégorie ordonnée
+  df['Ligue'] = pd.Categorical(df['Ligue'], categories=ligue_order, ordered=True)
+
+  # Grouper par Ligue et Poule puis sommer le nbMatchPlayed
+  grouped = df.groupby(['Ligue', 'Poule']).nbMatchPlayed.sum().reset_index()
+
+  # Diviser la somme par 2 pour obtenir le nombre réel de matchs
+  grouped['nbMatchPlayed'] = grouped['nbMatchPlayed'] / 2
+
+  # Trier par 'Ligue' (dans l'ordre défini par la catégorie)
+  grouped = grouped.sort_values(by=['Ligue', 'Poule'])
+  grouped = grouped[~((grouped['Ligue'] == 'Kessel') & (grouped['Poule'] == 'D'))]
+
+
+  result = grouped.to_dict('records')
+
+  return result
