@@ -340,9 +340,11 @@ async def on_message(message):
             if winner == joueurBleu:
                 scoreBleu = max(score_1, score_2)
                 scoreRouge = min(score_1, score_2)
+                winnerName = "Joueur Bleu"
             else:
                 scoreBleu = min(score_1, score_2)
                 scoreRouge = max(score_1, score_2)
+                winnerName = "Joueur Rouge"
               
            
             try : 
