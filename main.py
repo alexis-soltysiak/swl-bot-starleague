@@ -134,7 +134,6 @@ async def help(ctx):
     await ctx.send(embed=embed)
   
 
-    
 @bot.tree.command(name="liste", description="afficher la liste d'un joueur")
 async def slash_command(interaction: discord.Interaction, user: discord.User):
     
@@ -142,31 +141,26 @@ async def slash_command(interaction: discord.Interaction, user: discord.User):
     if interaction.channel_id not in chanelBot:
         lostCanal = random.choice(st.sentenceLostCanal)
         await interaction.response.send_message(lostCanal, ephemeral=True)
-        await asyncio.sleep(3)        
         return
     
     spyMessage = random.choice(st.sentenceSpy)
-    await interaction.response.send_message(spyMessage, ephemeral=True)
-    await asyncio.sleep(3)
+    await interaction.response.send_message(spyMessage, ephemeral=False)  # Envoi du message d'espionnage comme réponse initiale et éphémère
+    await asyncio.sleep(2)
 
     # Chargez le CSV dans un DataFrame
     df = pd.read_csv("bdd/users.csv")
     
-        
     user = f"{user.name}"
-    
     user = find_closest_match(user, df["Pseudo Discord"].tolist())
-
 
     # Trouvez la ligne qui correspond au Pseudo Discord
     matching_row = df[df["Pseudo Discord"] == user]
 
     # S'il y a une correspondance, retournez le lien. Sinon, retournez une chaîne vide ou un message d'erreur
     if not matching_row.empty:
-        await interaction.response.send_message(content=f"Joueur trouvé : {user}\n{matching_row['Lien Armée'].iloc[0]}")
-
+        await interaction.followup.send(content=f"Joueur trouvé : {user}\n{matching_row['Lien Armée'].iloc[0]}", ephemeral=False)
     else:
-        await interaction.response.send_message(content="Pas de lien trouvé pour cet utilisateur.")
+        await interaction.followup.send(content="Pas de lien trouvé pour cet utilisateur.", ephemeral=False)
 
     
 @bot.tree.command(name="calcul", description="calcul csv")
@@ -209,7 +203,7 @@ async def on_message(message):
     if message.channel.id in chanelResultat : 
         lines = message.content.split("\n")
         
-        if len(lines) == 12:
+        if len(lines) == 10:
             
             actualTime = datetime.now()
             mail = "martinpourrat@hotmail.com"
@@ -218,7 +212,7 @@ async def on_message(message):
             except : 
                 await message.channel.send("❌ Erreur : phase mal enregistrée ")
                 return
-
+            """
             try : 
                 leagueName = lines[1].strip()
             except : 
@@ -230,56 +224,68 @@ async def on_message(message):
             except : 
                 await message.channel.send("❌ Erreur : poule mal enregistrée ")
                 return
-            
+            """
             try : 
-                mission = lines[7].strip()
+                mission = lines[5].strip()
             except : 
                 await message.channel.send("❌ Erreur : mission mal enregistrée ")
                 return
             
             try : 
-                deploiement = lines[8].strip()
+                deploiement = lines[6].strip()
             except : 
                 await message.channel.send("❌ Erreur : deploiement mal enregistré ")
                 return
             
             try : 
-                conditions = lines[9].strip()
+                conditions = lines[7].strip()
             except : 
                 await message.channel.send("❌ Erreur : condition mal enregistré ")
                 return
             
             try : 
-                kpBleu = int(lines[10].strip())
+                kpBleu = int(lines[8].strip())
             except : 
                 await message.channel.send("❌ Erreur : kp bleu  mal enregistré ")
                 return
             
             try :    
-                kpRouge = int(lines[11].strip())
+                kpRouge = int(lines[9].strip())
             except : 
                 await message.channel.send("❌ Erreur : kp rouge mal enregistré ")
                 return
             try : 
                 # Découper la chaîne de score
-                score_parts = lines[6].split("-")
+                score_parts = lines[4].split("-")
                 score_1 = int(score_parts[0].strip())
                 score_2 = int(score_parts[1].strip())
             except : 
                 await message.channel.send("❌ Erreur : score mal enregistré ")
                 return
+            
+            df = pd.read_csv("bdd/users.csv")
+            
             try : 
-                match = re.match(r'<@!?(\d+)>', lines[3])
+                match = re.match(r'<@!?(\d+)>', lines[1])
+            
                 
                 if match:
                     member_id = int(match.group(1))
                     member = await message.guild.fetch_member(member_id)
+                    
+                    #user = f"{user.name}"
+                    #user = find_closest_match(user, df["Pseudo Discord"].tolist())
+
+                    
+                    print(member_id,member)
                     
             
                     if member:
                         joueurBleu = f"{member.name}#{member.discriminator}"  # Format : "username#discriminator"
                     else:
                         joueurBleu = "None"
+                        
+                    print(joueurBleu)
                 else: 
                     await message.channel.send("❌ Erreur : Joueur Bleu mal enregistré ")
                     return
@@ -289,7 +295,7 @@ async def on_message(message):
                 return
               
             try :       
-                match = re.match(r'<@!?(\d+)>', lines[4])
+                match = re.match(r'<@!?(\d+)>', lines[2])
 
                 if match:
                     member_id = int(match.group(1))
@@ -309,7 +315,7 @@ async def on_message(message):
                 return
             
             try : 
-                match = re.match(r'<@!?(\d+)>', lines[5])
+                match = re.match(r'<@!?(\d+)>', lines[3])
 
                 if match:
                     member_id = int(match.group(1))
