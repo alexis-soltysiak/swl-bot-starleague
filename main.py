@@ -709,7 +709,7 @@ async def slash_command(interaction: discord.Interaction):
         if str(memberId) in memberName: 
             id = discord.utils.get(guild.members,name =str(memberId))
             messageRetard = random.choice(st.sentenceLate).replace("[Joueur]", f"{id.mention}")
-            pinged_members.append(messageRetard)
+            pinged_members.append(messageRetard + '\n')
 
         else:
             not_found_members.append(str(memberId))
