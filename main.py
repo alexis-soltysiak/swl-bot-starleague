@@ -383,19 +383,7 @@ async def on_message(message):
                 # Convertir nouvelle_ligne en Series
             new_series = pd.Series(nouvelle_ligne, index=df.columns)
             try : 
-                
-                last_row_series = df.iloc[-1]
-                for col in cols_to_check:
-                    last_value = last_row_series[col]
-                    new_value = new_series[col]
-                    
-                    if last_value != new_value:
-                        print(f"Différence détectée pour la colonne {col}:")
-                        print(f"\tValeur dans la dernière ligne: {last_value} (Type: {type(last_value)}, Taille: {len(str(last_value))})")
-                        print(f"\tValeur dans new_series: {new_value} (Type: {type(new_value)}, Taille: {len(str(new_value))})")
-                    else:
-                        print(f"Pas de différence pour la colonne {col}")
-
+            
     
                 # Vérifier si la ligne existe déjà
                 exists = (df[cols_to_check] == new_series[cols_to_check]).all(axis=1).any()
