@@ -44,8 +44,8 @@ pouleList = ["A","B","C","D"]
 #107643272125513728
 adminUsers = [408722513711988747,190863577391955969,107643272125513728]
 chanelResultat = [1004513653015449620, 1158499018960277675]
-chanelBot = [1004513446932512828,1158499018960277675,1161959267948044309]
-
+chanelBot = [1158499018960277675,1161959267948044309]
+channelAnnonce = 1004513446932512828
 
 def find_closest_match(input_str, choices):
     matches = difflib.get_close_matches(input_str, choices, n=1,cutoff=0.3)  # n=1 signifie que nous voulons seulement la meilleure correspondance
@@ -676,6 +676,9 @@ async def slash_command(interaction: discord.Interaction):
 @bot.tree.command(name="retardataires",description="PING LES NULS")
 async def slash_command(interaction: discord.Interaction):
      
+        # Obtenez le canal
+    channel = interaction.guild.get_channel(channelAnnonce)
+    
     # Vérifiez si l'utilisateur est autorisé
     if interaction.user.id not in adminUsers:
         messageAdmin = random.choice(st.sentenceAdmin)
@@ -700,22 +703,24 @@ async def slash_command(interaction: discord.Interaction):
     guild = interaction.guild
     memberName = [member.name for member in guild.members]
 
-    print(memberName)
-
     for memberId in membersToPing:
         
 
         if str(memberId) in memberName: 
             id = discord.utils.get(guild.members,name =str(memberId))
-            pinged_members.append(f"{id.mention} il semblerait que tu sois en retard <3 \n")
+            messageRetard = random.choice(st.sentenceLate).replace("[Joueur]", f"{id.mention}")
+            pinged_members.append(messageRetard)
+
         else:
             not_found_members.append(str(memberId))
 
     if pinged_members:
-        await interaction.response.send_message(" ".join(pinged_members))
+        await channel.send(" ".join(pinged_members))
 
     if not_found_members:
-        await interaction.followup.send("Les utilisateurs suivants n'ont pas été trouvés: " + ", ".join(not_found_members))
+        await channel.send("Les utilisateurs suivants n'ont pas été trouvés: " + ", ".join(not_found_members))
+        
+    await interaction.response.send_message("✅ Message envoyé !")
 
 
 
