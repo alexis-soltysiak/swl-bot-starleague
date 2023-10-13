@@ -965,6 +965,9 @@ def calculation_of_the_number_of_match():
 def get_player_matches(player_name):
     # Lire le fichier CSV
     df = pd.read_csv("bdd/match.csv")
+
+    print(player_name)
+
     
       # Créer la colonne 'awin'
     df['awin'] = df.apply(lambda row: (row['Vainqueur'] == "Joueur Bleu" and row['Joueur Bleu'] == str(player_name)) or 
@@ -985,7 +988,7 @@ def get_player_matches(player_name):
     # Filtrer les lignes où le joueur est présent
     matches = df.loc[(df['Joueur Bleu'] == str(player_name)) | (df['Joueur Rouge'] == str(player_name))]
 
-    
+  
     # Convertir le DataFrame filtré en une liste de dictionnaires
     result = matches.to_dict('records')
     

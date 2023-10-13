@@ -685,6 +685,11 @@ async def slash_command(interaction: discord.Interaction, player_name: discord.U
         return
 
     
+    # Chargez le CSV dans un DataFrame
+    df = pd.read_csv("bdd/users.csv")
+    
+    player_name = f"{player_name.name}"
+    player_name = find_closest_match(player_name, df["Pseudo Discord"].tolist())
     matches = get_player_matches(player_name)
         
     # Assurez-vous que votre bot est connecté et que vous avez un objet channel pour envoyer des messages
