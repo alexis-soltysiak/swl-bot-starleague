@@ -19,7 +19,7 @@ import random
 import asyncio
 
 
-from functions import update_all_results, find_late_guys, calculation_of_the_number_of_match
+from functions import update_all_results, find_late_guys, calculation_of_the_number_of_match, get_player_matches
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -101,15 +101,18 @@ async def help(ctx):
     embed.add_field(name="\u2001", value="\n", inline=False)
 
 
-    embed.add_field(name="**🏆\u2001\u2001/classement [nom de la ligue]**", value="Permet d'afficher le classement de la Ligue", inline=False)
+    embed.add_field(name="**🏆\u2001\u2001/classement [nom de la ligue] [tableau entier]**", value="Permet d'afficher le classement de la Ligue", inline=False)
     embed.add_field(name="\u2001", value="\n", inline=False)
 
-    embed.add_field(name="**🏆\u2001\u2001/classement [nom de la ligue] [nom de la poule] **", value="Permet d'afficher le classement de la Ligue pour la poule voulu", inline=False)
+    embed.add_field(name="**🏆\u2001\u2001/classement [nom de la ligue] [nom de la poule] [tableau entier]**", value="Permet d'afficher le classement de la Ligue pour la poule voulu", inline=False)
     embed.add_field(name="\u2001", value="\n", inline=False)
 
     embed.add_field(name="**📜\u2001\u2001/liste [@joueur]**", value="Permet d'afficher le lien de la liste du joueur", inline=False)
     embed.add_field(name="\u2001", value="\n", inline=False)
 
+    embed.add_field(name="**📋\u2001\u2001/match [@joueur]**", value="permet d'afficher les matchs d'un joueur", inline=False)
+    embed.add_field(name="\u2001", value="\n", inline=False)
+    
     embed.add_field(name="**☎️\u2001\u2001/retardataires **", value="(ADMIN ONLY) Permet de ping les joueurs avec le moins de match", inline=False)
     embed.add_field(name="\u2001", value="\n", inline=False)
     
@@ -669,6 +672,45 @@ async def slash_command(interaction: discord.Interaction):
 
 
 
+
+
+@bot.tree.command(name="match",description="Get the match of a player")
+async def slash_command(interaction: discord.Interaction, player_name: discord.User):
+    
+    # Vérifiez si la commande est exécutée dans le canal autorisé
+    if interaction.channel_id not in chanelBot:
+        lostCanal = random.choice(st.sentenceLostCanal)
+        await interaction.response.send_message(lostCanal, ephemeral=True)
+        await asyncio.sleep(3)        
+        return
+
+    
+    matches = get_player_matches(player_name)
+        
+    # Assurez-vous que votre bot est connecté et que vous avez un objet channel pour envoyer des messages
+    embed = discord.Embed(title=f"Matchs de {player_name}", description="\n")
+
+    for match in matches:
+        # Déterminer la pastille en fonction de 'awin'
+        pastille = '🟢' if match['awin'] else '🔴'
+        
+        match_info = (f"**Phase:** {match['Phase']}\n"
+                    f"**Bleu:** {match['Joueur Bleu']}\n"
+                    f"**Rouge:** {match['Joueur Rouge']}\n"
+                    f"**Vainqueur:** {match['Vainqueur']}\n"
+                    f"**Objectif:** {match['Objectif']}\n"
+                    f"**Déploiement:** {match['Déploiement']}\n"
+                    f"**Condition:** {match['Condition']}\n"
+                    f"**PV Bleu:** {match['PV Bleu']}\n"
+                    f"**PV Rouge:** {match['PV Rouge']}\n"
+                    f"**KP Bleu:** {match['KP Bleu']}\n"
+                    f"**KP Rouge:** {match['KP Rouge']}")
+        embed.add_field(name=f"{pastille} Match du {match['Horodateur']}", value=match_info + "\n", inline=False)
+
+    await interaction.response.send_message(embed=embed)
+
+
+
 @bot.tree.command(name="bid",description="Get the list of bid")
 async def slash_command(interaction: discord.Interaction):
     
@@ -771,9 +813,8 @@ async def slash_command(interaction: discord.Interaction):
 
 
 
-
 @bot.tree.command(name="classement", description="afficher le classement")
-async def slash_command(interaction: discord.Interaction,ligue: str, poule_name:str = None):
+async def slash_command(interaction: discord.Interaction,ligue: str, poule_name:str = None, full : bool = False):
     
     # Vérifiez si la commande est exécutée dans le canal autorisé
     if interaction.channel_id not in chanelBot:
@@ -802,71 +843,152 @@ async def slash_command(interaction: discord.Interaction,ligue: str, poule_name:
         await interaction.channel.send("❌ Erreur : ligue ou poule mal enregistrée ")
         return
     
-    dfClassement = dfClassement[["Pseudo","Poule","victory" ,"defeat","points"]]
-    dfClassement = dfClassement.rename(columns={"victory": "V"})
-    dfClassement = dfClassement.rename(columns={"defeat": "D"})
-    dfClassement = dfClassement.rename(columns={"points": "PTS"})
-
-
-    #Raccourcir chaque valeur du DataFrame à 8 caractères max
-    for col in dfClassement.columns:
-
-        if col == "V":
-            dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:2].rjust(2))
-        elif col == "D":
-            dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:2].rjust(2))
-        elif col == "PTS":
-            dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:3].rjust(3))
-        elif col == "   Poule":
-            dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:5].rjust(5))
-        else :  
-            dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:8].rjust(8))
-        
-    dfClassement.columns = [
-        col[:2].rjust(2) if col == "V" or col == "D" 
-        else col[:3].rjust(3) if col == "PTS" 
-        else col[:5].rjust(5) if col == "Poule" 
-        else col[:8].rjust(8) 
-        for col in dfClassement.columns
-    ]
-    total_content = ""
- 
-
     
-    for poule in pouleList:
+    if full == False : 
+        
+        dfClassement = dfClassement[["Pseudo","Poule","victory" ,"defeat","points"]]
+        dfClassement = dfClassement.rename(columns={"victory": "V"})
+        dfClassement = dfClassement.rename(columns={"defeat": "D"})
+        dfClassement = dfClassement.rename(columns={"points": "PTS"})
 
-        df_poule = dfClassement[dfClassement['Poule'].str.strip() == poule]
-        df_poule = df_poule[["  Pseudo"," V" ," D","PTS"]]
 
+        #Raccourcir chaque valeur du DataFrame à 8 caractères max
+        for col in dfClassement.columns:
 
-        # Convertir ce DataFrame comme vous l'avez fait précédemment
-        header = ' | '.join(df_poule.columns)
-        separator = '-|-'.join(['-' * len(col) for col in df_poule.columns])
-        rows_as_strings = df_poule.apply(lambda row: ' | '.join(row), axis=1)
-        # Titre pour la poule actuelle
-        poule_title = f"### Poule {poule} ###\n"
-
-        content = f"```\n| {header} |\n| {separator} |\n" + '\n'.join('| ' + row + ' |' for row in rows_as_strings) + "\n```"
-
-        # Concatène le titre de la poule et son contenu au contenu total
-        total_content += poule_title + content + "\n"  # Deux sauts de ligne pour un espacement
+            if col == "V":
+                dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:2].rjust(2))
+            elif col == "D":
+                dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:2].rjust(2))
+            elif col == "PTS":
+                dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:3].rjust(3))
+            elif col == "   Poule":
+                dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:5].rjust(5))
+            else :  
+                dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:8].rjust(8))
+            
+        dfClassement.columns = [
+            col[:2].rjust(2) if col == "V" or col == "D" 
+            else col[:3].rjust(3) if col == "PTS" 
+            else col[:5].rjust(5) if col == "Poule" 
+            else col[:8].rjust(8) 
+            for col in dfClassement.columns
+        ]
+        total_content = ""
+    
 
         
-    # Si le contenu total est trop long pour un message Discord, vous devez le tronquer.
-    if len(total_content) > 2000:
-        total_content = total_content[:2000] + "..."
+        for poule in pouleList:
 
-    with open(f'media/baniere/{ligue}.png', 'rb') as f:
-        uploaded_image = await interaction.channel.send(file=discord.File(f))
-        image_url = uploaded_image.attachments[0].url
+            df_poule = dfClassement[dfClassement['Poule'].str.strip() == poule]
+            df_poule = df_poule[["  Pseudo"," V" ," D","PTS"]]
 
-    embed = discord.Embed(title=f"Classement {ligue}")
-    embed.set_image(url=image_url)
-    embed.description = total_content
 
-    await uploaded_image.delete()
-    await interaction.response.send_message(embed=embed)
-    return
+            # Convertir ce DataFrame comme vous l'avez fait précédemment
+            header = ' | '.join(df_poule.columns)
+            separator = '-|-'.join(['-' * len(col) for col in df_poule.columns])
+            rows_as_strings = df_poule.apply(lambda row: ' | '.join(row), axis=1)
+            # Titre pour la poule actuelle
+            poule_title = f"### Poule {poule} ###\n"
+
+            content = f"```\n| {header} |\n| {separator} |\n" + '\n'.join('| ' + row + ' |' for row in rows_as_strings) + "\n```"
+
+            # Concatène le titre de la poule et son contenu au contenu total
+            total_content += poule_title + content + "\n"  # Deux sauts de ligne pour un espacement
+
+            
+        # Si le contenu total est trop long pour un message Discord, vous devez le tronquer.
+        if len(total_content) > 2000:
+            total_content = total_content[:2000] + "..."
+
+        with open(f'media/baniere/{ligue}.png', 'rb') as f:
+            uploaded_image = await interaction.channel.send(file=discord.File(f))
+            image_url = uploaded_image.attachments[0].url
+
+        embed = discord.Embed(title=f"Classement {ligue}")
+        embed.set_image(url=image_url)
+        embed.description = total_content
+
+        await uploaded_image.delete()
+        await interaction.response.send_message(embed=embed)
+        return
+    
+    else : 
+            
+        dfClassement = dfClassement[["Pseudo","Poule","victory" ,"defeat","points","SoS","sumKP","sumPV"]]
+        dfClassement = dfClassement.rename(columns={"victory": "V"})
+        dfClassement = dfClassement.rename(columns={"defeat": "D"})
+        dfClassement = dfClassement.rename(columns={"points": "PTS"})
+
+
+
+        #Raccourcir chaque valeur du DataFrame à 8 caractères max
+        for col in dfClassement.columns:
+
+            if col == "V":
+                dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:2].rjust(2))
+            elif col == "D":
+                dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:2].rjust(2))
+            elif col == "PTS":
+                dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:3].rjust(3))
+            elif col == "   Poule":
+                dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:5].rjust(5))
+            elif col == "sumPV":
+                dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:5].rjust(5))
+            elif col == "SoS":
+                dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:3].rjust(3))
+            elif col == "sumKP":
+                dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:5].rjust(5))
+            else :  
+                dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:8].rjust(8))
+            
+        dfClassement.columns = [
+            col[:2].rjust(2) if col == "V" or col == "D" 
+            else col[:3].rjust(3) if col == "PTS" 
+            else col[:5].rjust(5) if col == "Poule" 
+            else col[:5].rjust(5) if col == "sumPV" 
+            else col[:3].rjust(3) if col == "SoS" 
+            else col[:5].rjust(5) if col == "sumKP" 
+            else col[:8].rjust(8) 
+            for col in dfClassement.columns
+        ]
+        total_content = ""
+    
+
+        
+        for poule in pouleList:
+
+            df_poule = dfClassement[dfClassement['Poule'].str.strip() == poule]
+            df_poule = df_poule[["  Pseudo"," V" ," D","PTS","SoS","sumKP","sumPV"]]
+
+
+            # Convertir ce DataFrame comme vous l'avez fait précédemment
+            header = ' | '.join(df_poule.columns)
+            separator = '-|-'.join(['-' * len(col) for col in df_poule.columns])
+            rows_as_strings = df_poule.apply(lambda row: ' | '.join(row), axis=1)
+            # Titre pour la poule actuelle
+            poule_title = f"### Poule {poule} ###\n"
+
+            content = f"```\n| {header} |\n| {separator} |\n" + '\n'.join('| ' + row + ' |' for row in rows_as_strings) + "\n```"
+
+            # Concatène le titre de la poule et son contenu au contenu total
+            total_content += poule_title + content + "\n"  # Deux sauts de ligne pour un espacement
+
+            
+        # Si le contenu total est trop long pour un message Discord, vous devez le tronquer.
+        if len(total_content) > 2000:
+            total_content = total_content[:2000] + "..."
+
+        with open(f'media/baniere/{ligue}.png', 'rb') as f:
+            uploaded_image = await interaction.channel.send(file=discord.File(f))
+            image_url = uploaded_image.attachments[0].url
+
+        embed = discord.Embed(title=f"Classement {ligue}")
+        embed.set_image(url=image_url)
+        embed.description = total_content
+
+        await uploaded_image.delete()
+        await interaction.response.send_message(embed=embed)
+        return
 
     
 

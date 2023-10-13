@@ -11,6 +11,7 @@ import kaleido
 from selenium import webdriver
 import time
 import matplotlib.pyplot as plt
+import mplcyberpunk
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -85,7 +86,7 @@ def neon_plot(x, y, ax=None):
 
   
 def graphWinLose(dfMatchMerged, listWinLose, ligue):
-
+  plt.style.use("cyberpunk")
   data = []
   for winner in listWinLose:
 
@@ -112,7 +113,8 @@ def graphWinLose(dfMatchMerged, listWinLose, ligue):
 
   # Titre
   ax.set_title("Win Rate Blue/Red/egalite", size=20)
-
+  mplcyberpunk.add_glow_effects()
+  
   return fig
 
 
@@ -120,7 +122,7 @@ def graphWinLose(dfMatchMerged, listWinLose, ligue):
 
 
 def graphPrObjectives(dfMatchMerged, listObjectives, ligue):
-
+  plt.style.use("cyberpunk")
   data = []
   for objective in listObjectives:
 
@@ -152,13 +154,14 @@ def graphPrObjectives(dfMatchMerged, listObjectives, ligue):
   # Décaler le diagramme circulaire vers la gauche
   ax.set_position([0, 0.1, 0.6, 0.75])
 
-    
+  mplcyberpunk.add_glow_effects()
   return fig
 
 
 
 def graphPrDeploiement(dfMatchMerged, listDeployement, ligue):
 
+  plt.style.use("cyberpunk")
   data = []
   for deployement in listDeployement:
 
@@ -188,13 +191,15 @@ def graphPrDeploiement(dfMatchMerged, listDeployement, ligue):
   ax.legend(wedges, legend_labels, title="Deployement", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1), prop={'size': 16})
   # Décaler le diagramme circulaire vers la gauche
   ax.set_position([0, 0.1, 0.6, 0.75])
-    
+  
+  mplcyberpunk.add_glow_effects()  
   return fig
 
 
 
 def graphPCondition(dfMatchMerged, listCondition, ligue):
 
+  plt.style.use("cyberpunk")
   data = []
   for condition in listCondition:
 
@@ -225,10 +230,13 @@ def graphPCondition(dfMatchMerged, listCondition, ligue):
   # Décaler le diagramme circulaire vers la gauche
   ax.set_position([0, 0.1, 0.6, 0.75])
   
+  mplcyberpunk.add_glow_effects()
   return fig
 
 
 def calculationFactionFormat(dfList, ligue,dfFinalResults):
+
+  plt.style.use("cyberpunk")
   dfListFaction = dfList.copy()
 
   if ligue != "Total":
@@ -281,13 +289,15 @@ def calculationFactionFormat(dfList, ligue,dfFinalResults):
   labels_inner = listLabels[len(labels)+1:]
 
   ax.pie(sizes_inner, labels=labels_inner, radius=0.7, startangle=90, wedgeprops=dict(width=0.3))
-
+    
+  mplcyberpunk.add_glow_effects()
   return fig
 
 
 
 def calculationWRPerFactionPerFormat(dfFinalResults,ligue):
 
+  plt.style.use("cyberpunk")
   dfFinalResultWR = dfFinalResults.copy()
   if ligue != "Total":
     dfFinalResultWR =  dfFinalResultWR[dfFinalResultWR["Ligue"] == ligue]
@@ -366,12 +376,13 @@ def calculationWRPerFactionPerFormat(dfFinalResults,ligue):
 
   # Légende
   ax.legend()
-
+  mplcyberpunk.add_glow_effects()
   return fig
 
 
 def calculationBid(dfFinalResults,ligue):
 
+  plt.style.use("cyberpunk")
   dfFinalResultWR = dfFinalResults.copy()
   
 
@@ -395,8 +406,7 @@ def calculationBid(dfFinalResults,ligue):
   ax.text(0.5, 0.3, str(bidMean), ha='center', va='center', fontsize=30, transform=ax.transAxes)
 
   plt.tight_layout()
-
-
+  mplcyberpunk.add_glow_effects()
   return fig
 
 
@@ -951,3 +961,32 @@ def calculation_of_the_number_of_match():
   result = grouped.to_dict('records')
 
   return result
+
+def get_player_matches(player_name):
+    # Lire le fichier CSV
+    df = pd.read_csv("bdd/match.csv")
+    
+      # Créer la colonne 'awin'
+    df['awin'] = df.apply(lambda row: (row['Vainqueur'] == "Joueur Bleu" and row['Joueur Bleu'] == str(player_name)) or 
+                                      (row['Vainqueur'] == "Joueur Rouge" and row['Joueur Rouge'] == str(player_name)), axis=1)
+
+  
+      
+    df = df.rename(columns={"Points de Victoire Joueur Bleu (chiffre seulement)": "PV Bleu"})
+    df = df.rename(columns={"Points de Victoire Joueur Rouge (chiffre seulement)": "PV Rouge"})
+    df = df.rename(columns={"Kill Point Joueur Bleu (chiffre seulement)": "KP Bleu"})
+    df = df.rename(columns={"Kill Point Joueur Rouge (chiffre seulement)": "KP Rouge"})
+ 
+    # Convertir les colonnes en chaînes de caractères
+    columns_to_convert = ["PV Bleu", "PV Rouge", "KP Bleu", "KP Rouge"]
+    for col in columns_to_convert:
+      df[col] = df[col].astype(str)
+        
+    # Filtrer les lignes où le joueur est présent
+    matches = df.loc[(df['Joueur Bleu'] == str(player_name)) | (df['Joueur Rouge'] == str(player_name))]
+
+    
+    # Convertir le DataFrame filtré en une liste de dictionnaires
+    result = matches.to_dict('records')
+    
+    return result
