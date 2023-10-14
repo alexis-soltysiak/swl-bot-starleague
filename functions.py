@@ -112,7 +112,7 @@ def graphWinLose(dfMatchMerged, listWinLose, ligue):
     t.set(size=20)
 
   # Titre
-  ax.set_title("Win Rate Blue/Red/egalite", size=20)
+  ax.set_title("Win Rate egalite", size=20)
   mplcyberpunk.add_glow_effects()
   
   return fig
@@ -234,64 +234,6 @@ def graphPCondition(dfMatchMerged, listCondition, ligue):
   return fig
 
 
-def calculationFactionFormat(dfList, ligue,dfFinalResults):
-
-  plt.style.use("cyberpunk")
-  dfListFaction = dfList.copy()
-
-  if ligue != "Total":
-    dfListFaction =  dfListFaction[dfListFaction["Ligue"] == ligue]
-
-
-  listLabels = [ligue]
-  listParents = [""]
-  listValues= [len(dfListFaction)]
-
-
-  labels = list(dfListFaction["Faction"].unique())
-  lineInDf = 0
-
-  values = []
-  for i in labels :
-    listLabels.append(i)
-    listParents.append(ligue)
-    listValues.append(len(dfListFaction[dfListFaction["Faction"] == i ]))
-
-  somme = sum(listValues)
-
-  for j in labels :
-
-    dfFinalResultWR = dfFinalResults.copy()
-    if ligue != "Total":
-      dfFinalResultWR =  dfFinalResultWR[dfFinalResultWR["Ligue"] == ligue]
-    dfFinalResultWR = dfFinalResultWR[dfFinalResultWR['Faction']== j ]
-    formatLabels = dfFinalResultWR["Format"].unique()
-
-    for format in formatLabels :
-      dfTMP = dfFinalResultWR[dfFinalResultWR['Format'] == format]
-      listLabels.append(format + " ("+ j[0] + ")")
-      listParents.append(j)
-      listValues.append(len(dfTMP))
-
-
-  # Mettez en place la figure et les axes
-  fig, ax = plt.subplots(figsize=(10, 10))
-
-  # Calcul des tailles et des labels pour les secteurs de premier niveau
-  sizes = listValues[:len(labels)+1]
-  labels = listLabels[:len(labels)+1]
-
-  # Diagramme à secteurs pour le premier niveau
-  ax.pie(sizes, labels=labels, startangle=90, wedgeprops=dict(width=0.3))
-
-  # Diagramme à secteurs pour le second niveau
-  sizes_inner = listValues[len(labels)+1:]
-  labels_inner = listLabels[len(labels)+1:]
-
-  ax.pie(sizes_inner, labels=labels_inner, radius=0.7, startangle=90, wedgeprops=dict(width=0.3))
-    
-  mplcyberpunk.add_glow_effects()
-  return fig
 
 
 
@@ -411,6 +353,129 @@ def calculationBid(dfFinalResults,ligue):
 
 
 
+def calculatScatterForKP(dfMatchMerged,ligue):
+
+  dfMatchMergedHistogramKp = dfMatchMerged.copy()
+
+  if ligue != "Total":
+    dfMatchMergedHistogramKp =  dfMatchMergedHistogramKp[dfMatchMergedHistogramKp["Ligue"] == ligue]
+
+  listAppendKP =[]
+
+  for i in range (0,800,100):
+    listAppendKP.append(len(dfMatchMergedHistogramKp[(dfMatchMergedHistogramKp['Kill Point Joueur Bleu (chiffre seulement)']>=i) & (dfMatchMergedHistogramKp['Kill Point Joueur Bleu (chiffre seulement)']< i+100)])\
+                      + len(dfMatchMergedHistogramKp[(dfMatchMergedHistogramKp['Kill Point Joueur Rouge (chiffre seulement)']>=i) & (dfMatchMergedHistogramKp['Kill Point Joueur Rouge (chiffre seulement)']< i+100)]))
+
+
+  x = ['[0-100]','[100-200]','[200-300]', '[300-400]', '[400-500]', '[500-600]', '[600-700]', '[700-800]']
+  y = listAppendKP
+  plt.style.use("cyberpunk")
+
+  # Création du graphique
+  fig, ax = plt.subplots(figsize=(10, 5))
+  # Ajout des données
+  ax.plot(x, y, '-og', linewidth=5, markersize=10, markeredgewidth=2, color="green")
+
+  # Mise à jour des titres et des étiquettes des axes
+  ax.set_title("KP repartition")
+  ax.set_xlabel("Range of KP")
+  ax.set_ylabel("N")
+
+  # Mise à jour des couleurs d'arrière-plan
+  ax.set_facecolor("none")
+  fig.patch.set_facecolor("none")
+  mplcyberpunk.add_glow_effects()
+  return fig
+
+def calculatScatterForKV(dfMatchMerged,ligue):
+
+  dfMatchMergedHistogramKv = dfMatchMerged.copy()
+
+  if ligue != "Total":
+    dfMatchMergedHistogramKv =  dfMatchMergedHistogramKv[dfMatchMergedHistogramKv["Ligue"] == ligue]
+
+  listAppendKV =[]
+
+  for i in range (0,11,1):
+    listAppendKV.append(len(dfMatchMergedHistogramKv[(dfMatchMergedHistogramKv['Points de Victoire Joueur Bleu (chiffre seulement)']==i)])\
+                      + len(dfMatchMergedHistogramKv[(dfMatchMergedHistogramKv['Points de Victoire Joueur Rouge (chiffre seulement)']==i)]))
+
+
+  x = ['{0}','{1}','{2}', '{3}', '{4}', '{5}', '{6}', '{7}','{8}','{9}','{10}']
+  y = listAppendKV
+  plt.style.use("cyberpunk")
+
+  # Création du graphique
+  fig, ax = plt.subplots(figsize=(10, 5))
+
+  # Ajout des données
+  ax.plot(x, y, '-og', linewidth=5, markersize=10, markeredgewidth=2, color="yellow")
+
+  # Mise à jour des titres et des étiquettes des axes
+  ax.set_title("VP repartition")
+  ax.set_xlabel("Range of VP")
+  ax.set_ylabel("N")
+
+  # Mise à jour des couleurs d'arrière-plan
+  ax.set_facecolor("none")
+  fig.patch.set_facecolor("none")
+  mplcyberpunk.add_glow_effects()
+  return fig
+
+
+
+# Génération de nuances pour chaque couleur de faction
+def generate_shades(color, n):
+    """Génère n nuances d'une couleur donnée."""
+    shades = []
+    for i in range(n):
+        shades.append([(c * (1 - 0.2*(i/n))) for c in color])
+    return shades
+
+
+def calculationFactionFormat(dfList, ligue):
+  dfListFaction = dfList.copy()
+
+  if ligue != "Total":
+      dfListFaction = dfListFaction[dfListFaction["Ligue"] == ligue]
+
+  # Pour le donut extérieur, associons chaque format à une faction et comptons les occurrences
+  format_counts = dfListFaction.groupby(['Faction', 'Format']).size()
+  format_labels = [f"{index[0]}_{index[1]}" for index in format_counts.index]
+  format_sizes = format_counts.values
+
+  # Pour le donut intérieur, comptez combien de fois chaque faction apparaît
+  faction_sizes = format_counts.groupby(level=0).sum()
+
+  # Couleurs pour les factions
+  faction_colors = plt.cm.Paired(range(len(faction_sizes)))
+
+  # Mapper chaque format à une nuance de la couleur de sa faction
+  format_colors = []
+  for index, size in format_counts.items():
+
+      faction, fmt = index
+      faction_color = faction_colors[np.where(faction_sizes.index == faction)[0][0]]
+      format_colors.append(generate_shades(faction_color, 1)[0])
+
+  plt.style.use("cyberpunk")
+  fig, ax = plt.subplots(figsize=(10, 10))
+
+  # Donut intérieur (Factions)
+  wedges1, texts1 = ax.pie(faction_sizes, labels=faction_sizes.index, startangle=90, wedgeprops=dict(width=0.3), colors=faction_colors, labeldistance=0.25)
+
+  # Donut extérieur (Formats)
+  wedges2, texts2 = ax.pie(format_sizes, labels=format_labels, startangle=90, wedgeprops=dict(width=0.3), radius=0.75, colors=format_colors, labeldistance=1.3)
+
+  # Ajouter une légende pour la faction
+  ax.legend(wedges1, faction_sizes.index, title="Factions", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1), fontsize=10)
+
+  # Augmenter la taille du texte
+  for text in texts1 + texts2:
+      text.set(size=12)
+
+  mplcyberpunk.add_glow_effects()
+  return fig
 
 
 def update_all_results():
@@ -905,6 +970,87 @@ def update_all_results():
 
     ligue = "Kessel"
     fig = calculationBid(dfFinalResults,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
+        
+    ####################################################################################
+    #KP
+    ####################################################################################
+    saveName = "HistogramKP"
+    
+    ligue = "Total"
+    fig = calculatScatterForKP(dfMatchMerged,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
+    ligue = "Coruscant"
+    fig = calculatScatterForKP(dfMatchMerged,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
+    ligue = "Alderaan"
+    fig = calculatScatterForKP(dfMatchMerged,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+
+
+    ligue = "Tatooine"
+    fig = calculatScatterForKP(dfMatchMerged,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
+    ligue = "Kessel"
+    fig = calculatScatterForKP(dfMatchMerged,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
+    ####################################################################################
+    #histo KV
+    ####################################################################################
+    
+    saveName = "HistogramKV"
+    
+    ligue = "Total"
+    fig = calculatScatterForKV(dfMatchMerged,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
+    ligue = "Coruscant"
+    fig = calculatScatterForKV(dfMatchMerged,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
+    ligue = "Alderaan"
+    fig = calculatScatterForKV(dfMatchMerged,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
+    ligue = "Tatooine"
+    fig = calculatScatterForKV(dfMatchMerged,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+
+    ligue = "Kessel"
+    fig = calculatScatterForKV(dfMatchMerged,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
+        
+    ####################################################################################
+    #Faction Format
+    ####################################################################################
+    
+    saveName = "FactionFormat"
+    
+    ligue = "Total"
+    fig = calculationFactionFormat(dfList,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+    
+    ligue = "Coruscant"
+    fig = calculationFactionFormat(dfList,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+
+
+    ligue = "Alderaan"
+    fig = calculationFactionFormat(dfList,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+
+    ligue = "Tatooine"
+    fig = calculationFactionFormat(dfList,ligue)
+    figSavingAndShowing(ligue,saveName,fig)
+
+    ligue = "Kessel"
+    fig = calculationFactionFormat(dfList,ligue)
     figSavingAndShowing(ligue,saveName,fig)
     
     return True

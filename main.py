@@ -119,21 +119,29 @@ async def help(ctx):
     embed.add_field(name="**🛰️\u2001\u2001/statusmatch **", value="Permet de voir l'évolution du nombre de match par poule et ligue", inline=False)
     embed.add_field(name="\u2001", value="\n", inline=False)
 
-    embed.add_field(name="**📊\u2001\u2001/wr**", value="Affiche les graphiques des win rate Joueur Bleu / Joueur rouge", inline=False)
+    embed.add_field(name="**📊\u2001\u2001/graphwr**", value="Affiche les graphiques des win rate Joueur Bleu / Joueur rouge", inline=False)
     embed.add_field(name="\u2001", value="\n", inline=False)
 
 
-    embed.add_field(name="**📊\u2001\u2001/objective**", value="Affiche les graphiques de la répartition des objectifs", inline=False)
+    embed.add_field(name="**📊\u2001\u2001/graphobjective**", value="Affiche les graphiques de la répartition des objectifs", inline=False)
     embed.add_field(name="\u2001", value="\n", inline=False)
     
-    
-    embed.add_field(name="**📊\u2001\u2001/deploiement**", value="Affiche les graphiques de la répartition des déploiments", inline=False)
+    embed.add_field(name="**📊\u2001\u2001/graphdeploiement**", value="Affiche les graphiques de la répartition des déploiments", inline=False)
     embed.add_field(name="\u2001", value="\n", inline=False)
     
-    embed.add_field(name="**📊\u2001\u2001/condition**", value="Affiche les graphiques de la répartition des conditions", inline=False)
+    embed.add_field(name="**📊\u2001\u2001/graphcondition**", value="Affiche les graphiques de la répartition des conditions", inline=False)
     embed.add_field(name="\u2001", value="\n", inline=False)
     
-        
+    embed.add_field(name="**📊\u2001\u2001/graphkp**", value="Affiche les graphiques de la répartition des kill point", inline=False)
+    embed.add_field(name="\u2001", value="\n", inline=False)
+    
+    embed.add_field(name="**📊\u2001\u2001/graphvp**", value="Affiche les graphiques de la répartition des victory point", inline=False)
+    embed.add_field(name="\u2001", value="\n", inline=False)
+    
+    embed.add_field(name="**📊\u2001\u2001/graphrepartition**", value="Affiche les graphiques de la répartition des factions et des formats", inline=False)
+    embed.add_field(name="\u2001", value="\n", inline=False)
+    
+     
     embed.add_field(name="**🔄\u2001\u2001/calcul**", value="(ADMIN ONLY) Force to calculate the results", inline=False)
     embed.add_field(name="\u2001", value="\n", inline=False)
     
@@ -475,7 +483,7 @@ async def slash_command(interaction: discord.Interaction):
 
 
 
-@bot.tree.command(name="wr",description="get the wr diagram")
+@bot.tree.command(name="graphwr",description="get the wr diagram")
 async def slash_command(interaction: discord.Interaction):
     
     messages_to_delete = []  # Liste pour stocker les messages à supprimer
@@ -526,7 +534,7 @@ async def slash_command(interaction: discord.Interaction):
         await message.delete()
             
 
-@bot.tree.command(name="objective",description="Get the list of objective")
+@bot.tree.command(name="graphobjective",description="Get the list of objective")
 async def slash_command(interaction: discord.Interaction):
     
     # Vérifiez si la commande est exécutée dans le canal autorisé
@@ -573,9 +581,157 @@ async def slash_command(interaction: discord.Interaction):
     # Supprimer tous les messages
     for message in messages_to_delete:
         await message.delete()
+        
+
+@bot.tree.command(name="graphkp",description="Get the histogram of KP")
+async def slash_command(interaction: discord.Interaction):
+    
+    # Vérifiez si la commande est exécutée dans le canal autorisé
+    if interaction.channel_id not in chanelBot:
+        lostCanal = random.choice(st.sentenceLostCanal)
+        await interaction.response.send_message(lostCanal, ephemeral=True)
+        await asyncio.sleep(3)        
+        return
+    
+    filesListe = ["Total", "Coruscant", "Tatooine", "Alderaan", "Kessel"]
+
+    messages_to_delete = []
+    # Répondre initialement à l'interaction
+    await interaction.response.send_message("Uploading graphs...", ephemeral=True)
+
+    for file in filesListe:
+        # Construire le chemin du fichier à partir de la liste
+        file_path = f'Results/{file}/HistogramKP.png'
+
+        # Télécharger l'image sur Discord
+        with open(file_path, 'rb') as f:
+            uploaded_image = await interaction.channel.send(file=discord.File(f))
+            image_url = uploaded_image.attachments[0].url
+
+        # Créer un embed pour l'image
+        embed = discord.Embed(title=f"Histogram KP for {file}")
+
+        # Utiliser l'URL de l'image téléchargée pour l'embed
+        embed.set_image(url=image_url)
+        
+        embed.description = f'Histogram KP  for {file}'
+
+        # Supprimer le message avec l'image téléchargée pour ne pas encombrer le canal
+        await uploaded_image.delete()
+
+        message = await interaction.channel.send(embed=embed)
+                                                 
+        # Ajouter le message à la liste des messages à supprimer
+        messages_to_delete.append(message)
+
+    # Attendre 60 secondes
+    await asyncio.sleep(300)
+
+    # Supprimer tous les messages
+    for message in messages_to_delete:
+        await message.delete()
 
 
-@bot.tree.command(name="deploiement",description="Get the list of deploiement")
+
+
+@bot.tree.command(name="graphvp",description="Get the histogram of VP")
+async def slash_command(interaction: discord.Interaction):
+    
+    # Vérifiez si la commande est exécutée dans le canal autorisé
+    if interaction.channel_id not in chanelBot:
+        lostCanal = random.choice(st.sentenceLostCanal)
+        await interaction.response.send_message(lostCanal, ephemeral=True)
+        await asyncio.sleep(3)        
+        return
+    
+    filesListe = ["Total", "Coruscant", "Tatooine", "Alderaan", "Kessel"]
+
+    messages_to_delete = []
+    # Répondre initialement à l'interaction
+    await interaction.response.send_message("Uploading graphs...", ephemeral=True)
+
+    for file in filesListe:
+        # Construire le chemin du fichier à partir de la liste
+        file_path = f'Results/{file}/HistogramKV.png'
+
+        # Télécharger l'image sur Discord
+        with open(file_path, 'rb') as f:
+            uploaded_image = await interaction.channel.send(file=discord.File(f))
+            image_url = uploaded_image.attachments[0].url
+
+        # Créer un embed pour l'image
+        embed = discord.Embed(title=f"Histogram VP for {file}")
+
+        # Utiliser l'URL de l'image téléchargée pour l'embed
+        embed.set_image(url=image_url)
+        
+        embed.description = f'Histogram VP for {file}'
+
+        # Supprimer le message avec l'image téléchargée pour ne pas encombrer le canal
+        await uploaded_image.delete()
+
+        message = await interaction.channel.send(embed=embed)
+                                                 
+        # Ajouter le message à la liste des messages à supprimer
+        messages_to_delete.append(message)
+
+    # Attendre 60 secondes
+    await asyncio.sleep(300)
+
+    # Supprimer tous les messages
+    for message in messages_to_delete:
+        await message.delete()
+        
+
+@bot.tree.command(name="graphrepartition",description="Get the reparition of format and faction")
+async def slash_command(interaction: discord.Interaction):
+    
+    # Vérifiez si la commande est exécutée dans le canal autorisé
+    if interaction.channel_id not in chanelBot:
+        lostCanal = random.choice(st.sentenceLostCanal)
+        await interaction.response.send_message(lostCanal, ephemeral=True)
+        await asyncio.sleep(3)        
+        return
+    
+    filesListe = ["Total", "Coruscant", "Tatooine", "Alderaan", "Kessel"]
+
+    messages_to_delete = []
+    # Répondre initialement à l'interaction
+    await interaction.response.send_message("Uploading graphs...", ephemeral=True)
+
+    for file in filesListe:
+        # Construire le chemin du fichier à partir de la liste
+        file_path = f'Results/{file}/FactionFormat.png'
+
+        # Télécharger l'image sur Discord
+        with open(file_path, 'rb') as f:
+            uploaded_image = await interaction.channel.send(file=discord.File(f))
+            image_url = uploaded_image.attachments[0].url
+
+        # Créer un embed pour l'image
+        embed = discord.Embed(title=f"Repartition Faction/Format for {file}")
+
+        # Utiliser l'URL de l'image téléchargée pour l'embed
+        embed.set_image(url=image_url)
+        
+        embed.description = f'Histogram Faction/Format  for {file}'
+
+        # Supprimer le message avec l'image téléchargée pour ne pas encombrer le canal
+        await uploaded_image.delete()
+
+        message = await interaction.channel.send(embed=embed)
+                                                 
+        # Ajouter le message à la liste des messages à supprimer
+        messages_to_delete.append(message)
+
+    # Attendre 60 secondes
+    await asyncio.sleep(300)
+
+    # Supprimer tous les messages
+    for message in messages_to_delete:
+        await message.delete()
+
+@bot.tree.command(name="graphdeploiement",description="Get the list of deploiement")
 async def slash_command(interaction: discord.Interaction):
     
     # Vérifiez si la commande est exécutée dans le canal autorisé
@@ -623,7 +779,7 @@ async def slash_command(interaction: discord.Interaction):
         await message.delete()
 
 
-@bot.tree.command(name="condition",description="Get the list of condition")
+@bot.tree.command(name="graphcondition",description="Get the list of condition")
 async def slash_command(interaction: discord.Interaction):
     
     # Vérifiez si la commande est exécutée dans le canal autorisé
