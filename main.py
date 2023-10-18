@@ -921,6 +921,9 @@ async def slash_command(interaction: discord.Interaction):
 
 
 
+def split_message(content):
+    """Divise le contenu en plusieurs morceaux de moins de 2000 caractères chacun."""
+    return [content[i:i+2000] for i in range(0, len(content), 2000)]
 
 
 @bot.tree.command(name="retardataires",description="PING LES NULS")
@@ -928,6 +931,8 @@ async def slash_command(interaction: discord.Interaction):
      
         # Obtenez le canal
     channel = interaction.guild.get_channel(channelAnnonce)
+    
+    print(channel)
     
     # Vérifiez si l'utilisateur est autorisé
     if interaction.user.id not in adminUsers:
@@ -959,13 +964,17 @@ async def slash_command(interaction: discord.Interaction):
         if str(memberId) in memberName: 
             id = discord.utils.get(guild.members,name =str(memberId))
             messageRetard = random.choice(st.sentenceLate).replace("[Joueur]", f"{id.mention}")
-            pinged_members.append(messageRetard + '\n')
+            pinged_members.append(messageRetard)
 
         else:
             not_found_members.append(str(memberId))
 
-    if pinged_members:
-        await channel.send(" ".join(pinged_members))
+    pinged_messages = " ".join(pinged_members)
+    split_pinged_messages = split_message(pinged_messages)
+
+    for message_part in split_pinged_messages:
+        await channel.send(message_part)
+
 
     if not_found_members:
         await channel.send("Les utilisateurs suivants n'ont pas été trouvés: " + ", ".join(not_found_members))
