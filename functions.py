@@ -478,6 +478,30 @@ def calculationFactionFormat(dfList, ligue):
   return fig
 
 
+  
+def update_tree():
+    lienMatch = "bdd/match.csv"
+    lienList = "bdd/users.csv"
+    dfMatch = pd.read_csv(lienMatch,delimiter = ",")
+    dfList = pd.read_csv(lienList,delimiter = ",")
+    
+    dfMatch = dfMatch[dfMatch["Phase"] != "Poule"]
+        
+    correspondance_pseudo_poule = dict(zip(dfList['Pseudo'], dfList['Poule']))
+
+    def obtenir_poule(pseudo):
+        return correspondance_pseudo_poule.get(pseudo, '')
+    
+    # Ajouter la colonne "Poule" au DataFrame des matchs en utilisant la fonction obtenir_poule
+    dfMatch['Poule'] = dfMatch['Joueur Bleu'].apply(obtenir_poule) + dfMatch['Joueur Rouge'].apply(obtenir_poule)
+    
+    # Sélectionner les colonnes requises pour le ClassementTree et les enregistrer dans un nouveau fichier CSV
+    dfMatch[['Phase', 'Poule', 'Joueur Bleu', 'Joueur Rouge', 'Vainqueur']].to_csv("ClassementTree.csv", index=False)
+
+    print(dfMatch)
+    return 
+    
+  
 def update_all_results():
     lienMatch = "bdd/match.csv"
     lienList = "bdd/users.csv"
@@ -490,6 +514,8 @@ def update_all_results():
     os.makedirs("Results/Alderaan", exist_ok=True)
     os.makedirs("Results/Tatooine", exist_ok=True)
     os.makedirs("Results/Kessel", exist_ok=True)
+    
+    dfMatch = dfMatch[dfMatch["Phase"] == "Poule"]
     
     dfList = dfList.loc[:, ~dfList.columns.str.contains('^Unnamed')]
 

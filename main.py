@@ -198,6 +198,7 @@ async def slash_command(interaction: discord.Interaction):
     await interaction.response.defer()
  
     answer = update_all_results()
+    answer2 = update_tree()
     
     if answer == True:
         await interaction.followup.send(content="✅ Calcul fini!")
