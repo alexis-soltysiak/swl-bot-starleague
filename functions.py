@@ -487,18 +487,20 @@ def update_tree():
     
     dfMatch = dfMatch[dfMatch["Phase"] != "Poule"]
         
-    correspondance_pseudo_poule = dict(zip(dfList['Pseudo'], dfList['Poule']))
+    correspondance_pseudo_poule = dict(zip(dfList['Pseudo Discord'], dfList['Ligue']))
 
     def obtenir_poule(pseudo):
         return correspondance_pseudo_poule.get(pseudo, '')
+      
+        # Modifier la colonne "Vainqueur" pour obtenir le pseudo du joueur gagnant
+    dfMatch['Vainqueur'] = dfMatch.apply(lambda row: row['Joueur Bleu'] if row['Vainqueur'] == 'Joueur Bleu' else row['Joueur Rouge'], axis=1)
     
     # Ajouter la colonne "Poule" au DataFrame des matchs en utilisant la fonction obtenir_poule
-    dfMatch['Poule'] = dfMatch['Joueur Bleu'].apply(obtenir_poule) + dfMatch['Joueur Rouge'].apply(obtenir_poule)
+    dfMatch['Ligue'] = dfMatch['Joueur Bleu'].apply(obtenir_poule) 
     
     # Sélectionner les colonnes requises pour le ClassementTree et les enregistrer dans un nouveau fichier CSV
-    dfMatch[['Phase', 'Poule', 'Joueur Bleu', 'Joueur Rouge', 'Vainqueur']].to_csv("ClassementTree.csv", index=False)
+    dfMatch[['Phase', 'Ligue', 'Joueur Bleu', 'Joueur Rouge', 'Vainqueur']].to_csv("bdd/ClassementTree.csv", index=False)
 
-    print(dfMatch)
     return 
     
   

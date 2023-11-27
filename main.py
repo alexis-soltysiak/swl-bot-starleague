@@ -19,7 +19,7 @@ import random
 import asyncio
 
 
-from functions import update_all_results, find_late_guys, calculation_of_the_number_of_match, get_player_matches
+from functions import update_tree, update_all_results, find_late_guys, calculation_of_the_number_of_match, get_player_matches
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -107,6 +107,9 @@ async def help(ctx):
     embed.add_field(name="**🏆\u2001\u2001/classement [nom de la ligue] [nom de la poule] [tableau entier]**", value="Permet d'afficher le classement de la Ligue pour la poule voulu", inline=False)
     embed.add_field(name="\u2001", value="\n", inline=False)
 
+    embed.add_field(name="**🏆\u2001\u2001/classementfinal**", value="Permet d'afficher le classement des phases finales", inline=False)
+    embed.add_field(name="\u2001", value="\n", inline=False)
+    
     embed.add_field(name="**📜\u2001\u2001/liste [@joueur]**", value="Permet d'afficher le lien de la liste du joueur", inline=False)
     embed.add_field(name="\u2001", value="\n", inline=False)
 
@@ -146,7 +149,17 @@ async def help(ctx):
     embed.add_field(name="\u2001", value="\n", inline=False)
     
     await ctx.send(embed=embed)
+
+
+
+@bot.tree.command(name="classss", description="test")
+async def slash_command(interaction: discord.Interaction):
   
+    embed = discord.Embed(title=f"Phase :")
+
+
+    await interaction.response.send_message(embed=embed)
+    return
 
 @bot.tree.command(name="liste", description="afficher la liste d'un joueur")
 async def slash_command(interaction: discord.Interaction, user: discord.User):
@@ -197,7 +210,8 @@ async def slash_command(interaction: discord.Interaction):
     
     await interaction.response.defer()
  
-    answer = update_all_results()
+    #answer = update_all_results()
+    answer = True
     answer2 = update_tree()
     
     if answer == True:
@@ -534,7 +548,7 @@ async def slash_command(interaction: discord.Interaction):
     for message in messages_to_delete:
         await message.delete()
             
-
+"""
 @bot.tree.command(name="graphobjective",description="Get the list of objective")
 async def slash_command(interaction: discord.Interaction):
     
@@ -582,8 +596,9 @@ async def slash_command(interaction: discord.Interaction):
     # Supprimer tous les messages
     for message in messages_to_delete:
         await message.delete()
-        
+"""   
 
+"""  
 @bot.tree.command(name="graphkp",description="Get the histogram of KP")
 async def slash_command(interaction: discord.Interaction):
     
@@ -631,9 +646,9 @@ async def slash_command(interaction: discord.Interaction):
     # Supprimer tous les messages
     for message in messages_to_delete:
         await message.delete()
+"""
 
-
-
+"""
 
 @bot.tree.command(name="graphvp",description="Get the histogram of VP")
 async def slash_command(interaction: discord.Interaction):
@@ -683,7 +698,9 @@ async def slash_command(interaction: discord.Interaction):
     for message in messages_to_delete:
         await message.delete()
         
+"""
 
+"""
 @bot.tree.command(name="graphrepartition",description="Get the reparition of format and faction")
 async def slash_command(interaction: discord.Interaction):
     
@@ -732,6 +749,39 @@ async def slash_command(interaction: discord.Interaction):
     for message in messages_to_delete:
         await message.delete()
 
+"""
+
+
+
+@bot.tree.command(name="classementfinal", description="afficher le classement final")
+async def slash_command(interaction: discord.Interaction):
+
+  df = pd.read_csv("bdd/ClassementTree.csv")
+  phases = df['Phase'].unique()
+
+  for phase in phases:
+      # Créer un embed pour la phase actuelle
+      embed = discord.Embed(title=f"Phase : {phase}")
+      
+      # Filtrer les données par phase
+      phase_df = df[df['Phase'] == phase]
+      
+      # Séparer les ligues uniques
+      ligues = phase_df['Ligue'].unique()
+      
+      for ligue in ligues:
+        ligue_df = phase_df[phase_df['Ligue'] == ligue]
+        
+        # Obtenir le gagnant (utiliser un emoji croix verte pour le gagnant)
+        gagnant = '\U00002705' if ligue_df.iloc[0]['Vainqueur'] == ligue_df.iloc[0]['Joueur Bleu'] else '\U00002705'
+        
+        # Ajouter les combattants au champ "value" de l'embed
+        embed.add_field(name=f"Ligue : {ligue}", value=f"{ligue_df.iloc[0]['Joueur Bleu']} {gagnant} vs {ligue_df.iloc[0]['Joueur Rouge']}", inline=False)
+    
+        await interaction.response.send_message(embed=embed)
+        return
+      
+      
 @bot.tree.command(name="graphdeploiement",description="Get the list of deploiement")
 async def slash_command(interaction: discord.Interaction):
     
@@ -1162,6 +1212,4 @@ async def slash_command(interaction: discord.Interaction,ligue: str, poule_name:
         return
 
     
-
-
 bot.run(token)
