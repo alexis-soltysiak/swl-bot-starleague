@@ -151,16 +151,6 @@ async def help(ctx):
     await ctx.send(embed=embed)
 
 
-
-@bot.tree.command(name="classss", description="test")
-async def slash_command(interaction: discord.Interaction):
-  
-    embed = discord.Embed(title=f"Phase :")
-
-
-    await interaction.response.send_message(embed=embed)
-    return
-
 @bot.tree.command(name="liste", description="afficher la liste d'un joueur")
 async def slash_command(interaction: discord.Interaction, user: discord.User):
     
@@ -210,8 +200,7 @@ async def slash_command(interaction: discord.Interaction):
     
     await interaction.response.defer()
  
-    #answer = update_all_results()
-    answer = True
+    answer = update_all_results()
     answer2 = update_tree()
     
     if answer == True:
@@ -756,7 +745,7 @@ async def slash_command(interaction: discord.Interaction):
 @bot.tree.command(name="classementfinal", description="afficher le classement final")
 async def slash_command(interaction: discord.Interaction):
 
-  df = pd.read_csv("bdd/ClassementTree.csv")
+  df = pd.read_csv("bdd/classementTree.csv")
   phases = df['Phase'].unique()
 
   for phase in phases:
@@ -773,13 +762,13 @@ async def slash_command(interaction: discord.Interaction):
         ligue_df = phase_df[phase_df['Ligue'] == ligue]
         
         # Obtenir le gagnant (utiliser un emoji croix verte pour le gagnant)
-        gagnant = '\U00002705' if ligue_df.iloc[0]['Vainqueur'] == ligue_df.iloc[0]['Joueur Bleu'] else '\U00002705'
+        gagnant = '\U00002705' if ligue_df.iloc[0]['Vainqueur'] == ligue_df.iloc[0]['Joueur Rouge'] else '\U00002705'
         
         # Ajouter les combattants au champ "value" de l'embed
         embed.add_field(name=f"Ligue : {ligue}", value=f"{ligue_df.iloc[0]['Joueur Bleu']} {gagnant} vs {ligue_df.iloc[0]['Joueur Rouge']}", inline=False)
     
         await interaction.response.send_message(embed=embed)
-        return
+
       
       
 @bot.tree.command(name="graphdeploiement",description="Get the list of deploiement")
