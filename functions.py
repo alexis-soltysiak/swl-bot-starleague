@@ -488,16 +488,29 @@ def update_tree():
     dfMatch = dfMatch[dfMatch["Phase"] != "Poule"]
         
     correspondance_pseudo_poule = dict(zip(dfList['Pseudo Discord'], dfList['Ligue']))
+    correspondance_pseudo_poule2 = dict(zip(dfList['Pseudo'], dfList['Ligue']))
 
     def obtenir_poule(pseudo):
-        return correspondance_pseudo_poule.get(pseudo, '')
+        poule  = correspondance_pseudo_poule.get(pseudo, '')
+        if poule:
+          return poule
+        else: 
+          return correspondance_pseudo_poule2.get(pseudo, '')
       
         # Modifier la colonne "Vainqueur" pour obtenir le pseudo du joueur gagnant
     dfMatch['Vainqueur'] = dfMatch.apply(lambda row: row['Joueur Bleu'] if row['Vainqueur'] == 'Joueur Bleu' else row['Joueur Rouge'], axis=1)
     
-    # Ajouter la colonne "Poule" au DataFrame des matchs en utilisant la fonction obtenir_poule
-    dfMatch['Ligue'] = dfMatch['Joueur Bleu'].apply(obtenir_poule) 
-    
+        # Créer une nouvelle colonne 'Ligue' dans le DataFrame et l'initialiser à None
+    dfMatch['Ligue'] = None
+
+    # Utiliser une boucle pour itérer sur les lignes et appliquer obtenir_poule
+    for index, row in dfMatch.iterrows():
+        joueur_bleu = row['Joueur Bleu']
+        ligue = obtenir_poule(joueur_bleu)
+        print(joueur_bleu,ligue)
+        dfMatch.at[index, 'Ligue'] = ligue
+
+      
     # Sélectionner les colonnes requises pour le ClassementTree et les enregistrer dans un nouveau fichier CSV
     dfMatch[['Phase', 'Ligue', 'Joueur Bleu', 'Joueur Rouge', 'Vainqueur']].to_csv("bdd/classementTree.csv", index=False)
 
@@ -516,6 +529,8 @@ def update_all_results():
     os.makedirs("Results/Alderaan", exist_ok=True)
     os.makedirs("Results/Tatooine", exist_ok=True)
     os.makedirs("Results/Kessel", exist_ok=True)
+
+
     
     dfMatch = dfMatch[dfMatch["Phase"] == "Poule"]
     
@@ -540,7 +555,7 @@ def update_all_results():
         dfList['points'] = 0
     except :
         pass
-    
+
     
     for index, row in dfMatch.iterrows():
         Jbleu = row["Joueur Bleu"]
@@ -569,13 +584,16 @@ def update_all_results():
             dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'points'] += 1
 
         #KP AND PV
-        dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'sumKP'] += row["Kill Point Joueur Bleu (chiffre seulement)"]
-        dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'sumPV'] += row["Points de Victoire Joueur Bleu (chiffre seulement)"]
-        dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'sumKP'] += row["Kill Point Joueur Rouge (chiffre seulement)"]
-        dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'sumPV'] += row["Points de Victoire Joueur Rouge (chiffre seulement)"]
+        dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'sumKP'] += int(row["Kill Point Joueur Bleu (chiffre seulement)"])
+        dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'sumPV'] += int(row["Points de Victoire Joueur Bleu (chiffre seulement)"])
+        dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'sumKP'] += int(row["Kill Point Joueur Rouge (chiffre seulement)"])
+        dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'sumPV'] += int(row["Points de Victoire Joueur Rouge (chiffre seulement)"])
 
         
         try : 
+          if(Jbleu =="romainswl" or Jrouge =="romainswl"):
+            print(dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'playerPlayed'].iloc[0])
+            print(dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'playerPlayed'].iloc[0])
           #LISTPLAYED PLAYED
           if (len(dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'playerPlayed'].iloc[0]) != 0):
               dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'playerPlayed'] += str("," + str(Jrouge))

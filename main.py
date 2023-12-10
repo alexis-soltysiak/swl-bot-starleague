@@ -40,6 +40,8 @@ bot.remove_command('help')
 
 ligueList = ["Coruscant","Tatooine","Alderaan","Kessel"]
 pouleList = ["A","B","C","D"]
+treeListTMP = ["poule","quart","demi","finale","1/2","1/4"]
+treeList = ["poule","quart","demi","finale"]
 
 #107643272125513728
 adminUsers = [408722513711988747,190863577391955969,107643272125513728]
@@ -241,6 +243,13 @@ async def on_message(message):
             mail = "martinpourrat@hotmail.com"
             try : 
                 phase = lines[0].strip()
+                phase = find_closest_match_0_8(phase,treeListTMP)
+                if phase == "1/4":
+                    phase = "quart"
+                elif phase =="1/2":
+                    phase = "demi"
+
+
             except : 
                 await message.channel.send("❌ Erreur : phase mal enregistrée ")
                 return
@@ -441,6 +450,7 @@ async def on_message(message):
             await message.channel.send("Update du classement et des graphs...")
 
             answer = update_all_results()
+            answer2 = update_tree()
             
             if answer == True:
                 await message.channel.send("✅ Update finie !")
