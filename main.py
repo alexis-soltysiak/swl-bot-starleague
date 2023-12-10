@@ -151,6 +151,16 @@ async def help(ctx):
     await ctx.send(embed=embed)
 
 
+
+@bot.tree.command(name="classss", description="test")
+async def slash_command(interaction: discord.Interaction):
+  
+    embed = discord.Embed(title=f"Phase :")
+
+
+    await interaction.response.send_message(embed=embed)
+    return
+
 @bot.tree.command(name="liste", description="afficher la liste d'un joueur")
 async def slash_command(interaction: discord.Interaction, user: discord.User):
     
@@ -202,7 +212,7 @@ async def slash_command(interaction: discord.Interaction):
  
     answer = update_all_results()
     answer2 = update_tree()
-    
+  
     if answer == True:
         await interaction.followup.send(content="✅ Calcul fini!")
     else :            
@@ -745,31 +755,51 @@ async def slash_command(interaction: discord.Interaction):
 @bot.tree.command(name="classementfinal", description="afficher le classement final")
 async def slash_command(interaction: discord.Interaction):
 
-  df = pd.read_csv("bdd/classementTree.csv")
-  phases = df['Phase'].unique()
-
-  for phase in phases:
-      # Créer un embed pour la phase actuelle
-      embed = discord.Embed(title=f"Phase : {phase}")
       
-      # Filtrer les données par phase
-      phase_df = df[df['Phase'] == phase]
-      
-      # Séparer les ligues uniques
-      ligues = phase_df['Ligue'].unique()
-      
-      for ligue in ligues:
-        ligue_df = phase_df[phase_df['Ligue'] == ligue]
-        
-        # Obtenir le gagnant (utiliser un emoji croix verte pour le gagnant)
-        gagnant = '\U00002705' if ligue_df.iloc[0]['Vainqueur'] == ligue_df.iloc[0]['Joueur Rouge'] else '\U00002705'
-        
-        # Ajouter les combattants au champ "value" de l'embed
-        embed.add_field(name=f"Ligue : {ligue}", value=f"{ligue_df.iloc[0]['Joueur Bleu']} {gagnant} vs {ligue_df.iloc[0]['Joueur Rouge']}", inline=False)
+    lienClassement = "bdd/classementTree.csv"
     
+    df = pd.read_csv(lienClassement,delimiter = ",")
+
+    phases = df['Phase'].unique()
+
+    for phase in phases:
+        # Créer un embed pour la phase actuelle
+        embed = discord.Embed(title=f"Phase : {phase}")
+        
+        # Filtrer les données par phase
+        phase_df = df[df['Phase'] == phase]
+        
+        # Séparer les ligues uniques
+        ligues = phase_df['Ligue'].unique()
+        
+        for ligue in ligues:
+            ligue_df = phase_df[phase_df['Ligue'] == ligue]
+
+            # Ajouter un titre pour la ligue dans l'embed
+            embed.add_field(name=f"**Ligue : {ligue}**", value="\u200B", inline=False)
+            
+            # Itérer sur chaque match dans la ligue
+            for _, match in ligue_df.iterrows():
+                # Déterminer le gagnant
+                gagnant = match['Vainqueur']
+                emoji_gagnant = '\U00002705' if gagnant == match['Joueur Rouge'] else '\U00002705'
+
+                # Mise en forme du texte
+                joueur_bleu = f"**{match['Joueur Bleu']}**"
+                joueur_rouge = f"**{match['Joueur Rouge']}**"
+                gagnant_texte = joueur_rouge if gagnant == match['Joueur Rouge'] else joueur_bleu
+
+                # Construire la valeur de l'embed pour le match
+                match_info = f"{joueur_bleu} vs {joueur_rouge}\nGagnant: {emoji_gagnant} {gagnant_texte}"
+
+                # Ajouter les informations du match à l'embed
+                embed.add_field(name=f"Match", value=match_info, inline=False)
+
+        # Envoyer l'embed après avoir ajouté toutes les ligues et tous les matchs de la phase actuelle
         await interaction.response.send_message(embed=embed)
 
-      
+
+    
       
 @bot.tree.command(name="graphdeploiement",description="Get the list of deploiement")
 async def slash_command(interaction: discord.Interaction):
@@ -1198,7 +1228,7 @@ async def slash_command(interaction: discord.Interaction,ligue: str, poule_name:
 
         await uploaded_image.delete()
         await interaction.response.send_message(embed=embed)
-        return
+        return 
 
     
 bot.run(token)

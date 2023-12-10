@@ -499,7 +499,7 @@ def update_tree():
     dfMatch['Ligue'] = dfMatch['Joueur Bleu'].apply(obtenir_poule) 
     
     # Sélectionner les colonnes requises pour le ClassementTree et les enregistrer dans un nouveau fichier CSV
-    dfMatch[['Phase', 'Ligue', 'Joueur Bleu', 'Joueur Rouge', 'Vainqueur']].to_csv("bdd/ClassementTree.csv", index=False)
+    dfMatch[['Phase', 'Ligue', 'Joueur Bleu', 'Joueur Rouge', 'Vainqueur']].to_csv("bdd/classementTree.csv", index=False)
 
     return 
     
