@@ -13,6 +13,7 @@ import time
 import matplotlib.pyplot as plt
 import mplcyberpunk
 
+
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def testPointSeparation(classement,dfMatch,playerIloc1, playerIloc2):
@@ -507,7 +508,6 @@ def update_tree():
     for index, row in dfMatch.iterrows():
         joueur_bleu = row['Joueur Bleu']
         ligue = obtenir_poule(joueur_bleu)
-        print(joueur_bleu,ligue)
         dfMatch.at[index, 'Ligue'] = ligue
 
       
@@ -591,9 +591,6 @@ def update_all_results():
 
         
         try : 
-          if(Jbleu =="romainswl" or Jrouge =="romainswl"):
-            print(dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'playerPlayed'].iloc[0])
-            print(dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'playerPlayed'].iloc[0])
           #LISTPLAYED PLAYED
           if (len(dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'playerPlayed'].iloc[0]) != 0):
               dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'playerPlayed'] += str("," + str(Jrouge))
@@ -1158,7 +1155,7 @@ def get_player_matches(player_name):
     # Lire le fichier CSV
     df = pd.read_csv("bdd/match.csv")
 
-    print(player_name)
+  
 
     
       # Créer la colonne 'awin'

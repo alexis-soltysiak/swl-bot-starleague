@@ -40,7 +40,7 @@ bot.remove_command('help')
 
 ligueList = ["Coruscant","Tatooine","Alderaan","Kessel"]
 pouleList = ["A","B","C","D"]
-treeListTMP = ["poule","quart","demi","finale","1/2","1/4"]
+treeListTMP = ["poule","quart","demi","finale","1/2","1/4","barrage"]
 treeList = ["poule","quart","demi","finale"]
 
 #107643272125513728
@@ -154,15 +154,6 @@ async def help(ctx):
 
 
 
-@bot.tree.command(name="classss", description="test")
-async def slash_command(interaction: discord.Interaction):
-  
-    embed = discord.Embed(title=f"Phase :")
-
-
-    await interaction.response.send_message(embed=embed)
-    return
-
 @bot.tree.command(name="liste", description="afficher la liste d'un joueur")
 async def slash_command(interaction: discord.Interaction, user: discord.User):
     
@@ -242,8 +233,10 @@ async def on_message(message):
             actualTime = datetime.now()
             mail = "martinpourrat@hotmail.com"
             try : 
-                phase = lines[0].strip()
-                phase = find_closest_match_0_8(phase,treeListTMP)
+                phase = str(lines[0].strip())
+                phasetest = str(lines[0].strip())
+                phase = find_closest_match(phase,treeListTMP)
+                print(phasetest,phase)
                 if phase == "1/4":
                     phase = "quart"
                 elif phase =="1/2":
@@ -763,50 +756,57 @@ async def slash_command(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="classementfinal", description="afficher le classement final")
-async def slash_command(interaction: discord.Interaction):
+async def slash_command(interaction: discord.Interaction,phase_name: str):
 
-      
+
     lienClassement = "bdd/classementTree.csv"
+    df = pd.read_csv(lienClassement, delimiter=",")
+
+ 
+    phase = find_closest_match(phase_name,treeListTMP)
+    if phase == "1/4":
+        phase = "quart"
+    elif phase =="1/2":
+        phase = "demi"
+
     
-    df = pd.read_csv(lienClassement,delimiter = ",")
+    # Créer un embed pour la phase actuelle
+    embed = discord.Embed(title=f"Phase : {phase}")
 
-    phases = df['Phase'].unique()
+    # Filtrer les données par phase
+    phase_df = df[df['Phase'] == phase]
 
-    for phase in phases:
-        # Créer un embed pour la phase actuelle
-        embed = discord.Embed(title=f"Phase : {phase}")
-        
-        # Filtrer les données par phase
-        phase_df = df[df['Phase'] == phase]
-        
-        # Séparer les ligues uniques
-        ligues = phase_df['Ligue'].unique()
-        
-        for ligue in ligues:
-            ligue_df = phase_df[phase_df['Ligue'] == ligue]
+    # Séparer les ligues uniques
+    ligues = phase_df['Ligue'].unique()
 
-            # Ajouter un titre pour la ligue dans l'embed
-            embed.add_field(name=f"**Ligue : {ligue}**", value="\u200B", inline=False)
+    for ligue in ligues:
+        ligue_df = phase_df[phase_df['Ligue'] == ligue]
+
+        embed.add_field(name=f"\n\n", value="\u200B", inline=False)
+
+        # Ajouter un titre pour la ligue dans l'embed
+        embed.add_field(name=f"\n\n**Ligue : {ligue}**", value="\u200B", inline=False)
+
+        # Itérer sur chaque match dans la ligue
+        for _, match in ligue_df.iterrows():
+            # Déterminer le gagnant
+            gagnant = match['Vainqueur']
+            emoji_gagnant = ' 🚯 ⚔️ ✅ ' if gagnant == match['Joueur Rouge'] else '✅ ⚔️ 🚯'
+
+            # Mise en forme du texte
+            joueur_bleu = match['Joueur Bleu']
             
-            # Itérer sur chaque match dans la ligue
-            for _, match in ligue_df.iterrows():
-                # Déterminer le gagnant
-                gagnant = match['Vainqueur']
-                emoji_gagnant = '\U00002705' if gagnant == match['Joueur Rouge'] else '\U00002705'
+            joueur_rouge = match['Joueur Rouge']
+            
+            #sizeSquare = "■" * (longueurMax - len(match['Joueur Bleu'] ))
 
-                # Mise en forme du texte
-                joueur_bleu = f"**{match['Joueur Bleu']}**"
-                joueur_rouge = f"**{match['Joueur Rouge']}**"
-                gagnant_texte = joueur_rouge if gagnant == match['Joueur Rouge'] else joueur_bleu
+            # Construire la valeur de l'embed pour le match
+            match_info = f"{joueur_bleu} {emoji_gagnant} {joueur_rouge}"
+            # Ajouter les informations du match à l'embed
+            embed.add_field(name=f"", value=match_info, inline=False)
 
-                # Construire la valeur de l'embed pour le match
-                match_info = f"{joueur_bleu} vs {joueur_rouge}\nGagnant: {emoji_gagnant} {gagnant_texte}"
-
-                # Ajouter les informations du match à l'embed
-                embed.add_field(name=f"Match", value=match_info, inline=False)
-
-        # Envoyer l'embed après avoir ajouté toutes les ligues et tous les matchs de la phase actuelle
-        await interaction.response.send_message(embed=embed)
+    # Envoyer l'embed après avoir ajouté toutes les ligues et tous les matchs de la phase actuelle
+    await interaction.response.send_message(embed=embed)
 
 
     
