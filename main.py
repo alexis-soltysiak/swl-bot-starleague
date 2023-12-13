@@ -19,7 +19,7 @@ import random
 import asyncio
 
 
-from functions import update_tree, update_all_results, find_late_guys, calculation_of_the_number_of_match, get_player_matches
+from functions import update_tree, update_all_results,create_full_classement, find_late_guys, calculation_of_the_number_of_match, get_player_matches
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -109,7 +109,10 @@ async def help(ctx):
     embed.add_field(name="**🏆\u2001\u2001/classement [nom de la ligue] [nom de la poule] [tableau entier]**", value="Permet d'afficher le classement de la Ligue pour la poule voulu", inline=False)
     embed.add_field(name="\u2001", value="\n", inline=False)
 
-    embed.add_field(name="**🏆\u2001\u2001/classementfinal**", value="Permet d'afficher le classement des phases finales", inline=False)
+    embed.add_field(name="**🏆\u2001\u2001/classementfinal [nom de la phase]**", value="Permet d'afficher le classement des phases finales", inline=False)
+    embed.add_field(name="\u2001", value="\n", inline=False)
+    
+    embed.add_field(name="**🏆\u2001\u2001/classementgeneral**", value="Permet d'afficher le classement des phases finales", inline=False)
     embed.add_field(name="\u2001", value="\n", inline=False)
     
     embed.add_field(name="**📜\u2001\u2001/liste [@joueur]**", value="Permet d'afficher le lien de la liste du joueur", inline=False)
@@ -205,6 +208,7 @@ async def slash_command(interaction: discord.Interaction):
  
     answer = update_all_results()
     answer2 = update_tree()
+    answer3 = create_full_classement()
   
     if answer == True:
         await interaction.followup.send(content="✅ Calcul fini!")
@@ -444,6 +448,7 @@ async def on_message(message):
 
             answer = update_all_results()
             answer2 = update_tree()
+            answer3 = create_full_classement()
             
             if answer == True:
                 await message.channel.send("✅ Update finie !")
@@ -753,7 +758,43 @@ async def slash_command(interaction: discord.Interaction):
 
 """
 
+@bot.tree.command(name="classementgeneral", description="afficher le classement geneal")
+async def slash_command(interaction: discord.Interaction):
+ 
+    lienClassement = "bdd/classementgeneral.csv"
+    dfClassement = pd.read_csv(lienClassement, delimiter=",")
 
+    # Sélectionnez uniquement les colonnes nécessaires
+    dfClassement = dfClassement[["Pseudo Discord", "victory", "defeat", "points"]]
+
+    # Renommez les colonnes comme vous l'avez fait
+    dfClassement = dfClassement.rename(columns={"Pseudo Discord": "Pseudo", "victory": "Victoires", "defeat": "Défaites", "points": "Points"})
+
+    # Réinitialisez l'index pour l'utiliser comme colonne
+    dfClassement = dfClassement.reset_index()
+
+    # Ajoutez 1 à la colonne d'index réinitialisée pour commencer l'index à 1
+    dfClassement["index"] = dfClassement["index"] + 1
+    # Raccourcir chaque valeur du DataFrame à 8 caractères max
+    for col in dfClassement.columns:
+        if col != "Pseudo":
+            dfClassement[col] = dfClassement[col].astype(str).apply(lambda x: x[:2].rjust(2))
+
+    # Créez un embed avec le titre
+    embed = discord.Embed(title="Classement Général", color=discord.Color.blue())
+
+    # Divisez le DataFrame en morceaux pour chaque page (par exemple, 10 lignes par page)
+    rows_per_page = 15
+    pages = [dfClassement[i:i+rows_per_page] for i in range(0, len(dfClassement), rows_per_page)]
+
+    # Envoyez chaque page sous forme de sujet (field) dans l'embed
+    for i, page in enumerate(pages):
+        page_content = "```\n" + page.to_string(index=False) + "\n```"
+        embed.add_field(name=f"Page {i+1}", value=page_content, inline=False)
+
+    await interaction.response.send_message(embed=embed)
+    
+    
 
 @bot.tree.command(name="classementfinal", description="afficher le classement final")
 async def slash_command(interaction: discord.Interaction,phase_name: str):

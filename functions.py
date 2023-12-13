@@ -1182,3 +1182,125 @@ def get_player_matches(player_name):
     result = matches.to_dict('records')
     
     return result
+  
+def create_full_classement():
+  
+  dfMatch = pd.read_csv("bdd/match.csv")
+  dfList = pd.read_csv("bdd/users.csv")
+  
+  dfMatch= dfMatch[dfMatch["Phase"] == "Poule"]
+  
+  dfList = dfList.loc[:, ~dfList.columns.str.contains('^Unnamed')]
+
+  try :
+    dfList = dfList.drop(columns=['Prenom Nom'])
+    dfList = dfList.drop(columns=['Lien Armé'])
+    dfList = dfList.drop(columns=['Column1'])
+    dfList = dfList.drop(columns=['mots clés'])
+  except :
+    pass
+  try :
+    dfList['SoS'] = 0
+    dfList['sumKP'] = 0
+    dfList['sumPV'] = 0
+    dfList['playerPlayed'] = ""
+    dfList['victory'] = 0
+    dfList['defeat'] = 0
+    dfList['egality'] = 0
+    dfList['nbMatchPlayed'] = 0
+    dfList['points'] = 0
+
+
+  except :
+    pass
+
+  
+  for index, row in dfMatch.iterrows():
+    Jbleu = row["Joueur Bleu"]
+    Jrouge = row["Joueur Rouge"]
+
+    #BLEU GAGNE
+    if row["Vainqueur"] == "Joueur Bleu":
+      dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'victory'] += 1
+      dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'points'] += 3
+
+      dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'defeat'] += 1
+
+    #ROUGE GAGNE
+    elif row["Vainqueur"] == "Joueur Rouge":
+      dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'victory'] += 1
+      dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'points'] += 3
+
+      dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'defeat'] += 1
+
+
+    else :
+      dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'egality'] += 1
+      dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'points'] += 1
+
+      dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'egality'] += 1
+      dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'points'] += 1
+
+    #KP AND PV
+    dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'sumKP'] += row["Kill Point Joueur Bleu (chiffre seulement)"]
+    dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'sumPV'] += row["Points de Victoire Joueur Bleu (chiffre seulement)"]
+    dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'sumKP'] += row["Kill Point Joueur Rouge (chiffre seulement)"]
+    dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'sumPV'] += row["Points de Victoire Joueur Rouge (chiffre seulement)"]
+
+    
+
+    #LISTPLAYED PLAYED
+    if (len(dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'playerPlayed'].iloc[0]) != 0):
+      dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'playerPlayed'] += str("," + str(Jrouge))
+    else :
+      dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'playerPlayed'] += str(str(Jrouge))
+
+    if (len(dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'playerPlayed'].iloc[0]) != 0):
+      dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'playerPlayed'] += str("," + str(Jbleu))
+    else :
+      dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'playerPlayed'] += str(str(Jbleu))
+
+
+    #NB matchs done
+    dfList.loc[dfList['Pseudo Discord'] == Jbleu, 'nbMatchPlayed'] += 1
+    dfList.loc[dfList['Pseudo Discord'] == Jrouge, 'nbMatchPlayed'] += 1
+
+
+
+
+  classement = dfList.copy()
+
+  #sorting
+  classement = classement.sort_values(by='points', ascending=False)
+  classement["pointsSeparation"] = classement["points"]
+
+  #Deal with equality
+  classement = dealWithEqualityPoint(classement,dfMatch)
+
+
+  #Deal With SoS
+  classement = dealWithSoS(classement)
+  #sorting
+  classement = classement.sort_values(by=['pointsSeparation','SoS','sumKP','sumPV'], ascending=False)
+
+
+  dfFinalResults = classement.copy()
+  dfFinalResultsHTML = classement.copy()
+
+  s = pd.Series(["--------","----  ","----------","-----------------------","-----","-----","-----","-----","-----","-----","-----","-----","-----","-----"],index=['Ligue','Poule','Pseudo','Pseudo Discord','victory','defeat','egality','points',"SoS","nbMatchPlayed","Faction","Format","Nombre d'activation","Nombre de points"])
+
+  # Appending empty series to df
+  dfFinalResultsHTML = pd.concat([dfFinalResultsHTML, s], ignore_index=True)
+
+  try :
+      classement = classement.drop(columns=["pointsSeparation","mots clés"])
+  except :
+    pass
+
+  #display(classement)
+
+
+  classement.to_csv("bdd/classementgeneral.csv",index=False)
+  
+  return 
+
